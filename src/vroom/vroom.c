@@ -74,12 +74,10 @@ process(
         bool plan,
         bool geometry,
 
-        vrp_vroom_rt **result_tuples,
-        size_t *result_count) {
+        char **result) {
     pgr_SPI_connect();
 
-    (*result_tuples) = NULL;
-    (*result_count) = 0;
+    (*result) = NULL;
 
     clock_t start_t = clock();
     char *log_msg = NULL;
@@ -92,21 +90,20 @@ process(
             plan,
             geometry,
 
-            result_tuples,
-            result_count,
+            result,
             &log_msg,
             &notice_msg,
             &err_msg);
 
     time_msg("processing pgr_vroom", start_t, clock());
 
-    if (err_msg && (*result_tuples)) {
-        pfree(*result_tuples);
-        (*result_tuples) = NULL;
-        (*result_count) = 0;
+    if (err_msg && (*result)) {
+        pfree(*result);
+        (*result) = NULL;
     }
 
     pgr_global_report(log_msg, notice_msg, err_msg);
+
 
     if (log_msg) pfree(log_msg);
     if (notice_msg) pfree(notice_msg);
@@ -121,9 +118,7 @@ process(
  */
 
 PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
-    vrp_vroom_rt *result_tuples = NULL;
-    size_t result_count = 0;
-
+    char *result = NULL;
 
     /***********************************************************************
      *
@@ -143,12 +138,9 @@ PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
             text_to_cstring(PG_GETARG_TEXT_P(2)),
             PG_GETARG_BOOL(3),
             PG_GETARG_BOOL(4),
-            &result_tuples,
-            &result_count);
+            &result);
 
-    assert(result_count == 1);
+    Datum result_datum = CStringGetTextDatum(result);
 
-    Datum result = CStringGetTextDatum(result_tuples[0].solution);
-
-    PG_RETURN_TEXT_P(result);
+    PG_RETURN_TEXT_P(result_datum);
 }

@@ -65,7 +65,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * @returns results, when results are found
  */
 
-std::vector < vrp_vroom_rt >
+char*
 vrp_vroom(
         std::string problem_instance_json,
         std::string server_host,
@@ -74,9 +74,9 @@ vrp_vroom(
         bool geometry,
         std::string &log) {
     pgrouting::functions::Vrp_vroom fn_vroom;
-    std::vector < vrp_vroom_rt > results = fn_vroom.vroom(problem_instance_json, server_host, server_port, plan, geometry);
+    char *result = fn_vroom.vroom(problem_instance_json, server_host, server_port, plan, geometry);
     log += fn_vroom.get_log();
-    return results;
+    return result;
 }
 
 /** @brief Performs exception handling and converts the results to postgres.
@@ -112,8 +112,7 @@ do_vrp_vroom(
         bool plan,
         bool geometry,
 
-        vrp_vroom_rt **return_tuples,
-        size_t *return_count,
+        char **result,
 
         char ** log_msg,
         char ** notice_msg,
@@ -125,25 +124,15 @@ do_vrp_vroom(
         pgassert(!(*log_msg));
         pgassert(!(*notice_msg));
         pgassert(!(*err_msg));
-        pgassert(!(*return_tuples));
-        pgassert(*return_count == 0);
+        pgassert(!(*result));
 
         std::string problem_instance_json(vrp_json);
         std::string server_host(osrm_host);
         std::string server_port(osrm_port);
 
         std::string logstr;
-        std::vector < vrp_vroom_rt > results = vrp_vroom(
-            problem_instance_json, server_host, server_port, plan, geometry, logstr);
+        (*result) = vrp_vroom(problem_instance_json, server_host, server_port, plan, geometry, logstr);
         log << logstr;
-        auto count = results.size();
-        // pgassert(!count);
-
-        (*return_tuples) = pgr_alloc(count, (*return_tuples));
-        for (size_t i = 0; i < count; i++) {
-            *((*return_tuples) + i) = results[i];
-        }
-        (*return_count) = count;
 
         pgassert(*err_msg == NULL);
         *log_msg = log.str().empty()?
@@ -153,20 +142,17 @@ do_vrp_vroom(
             *notice_msg :
             pgr_msg(notice.str().c_str());
     } catch (AssertFailedException &except) {
-        (*return_tuples) = pgr_free(*return_tuples);
-        (*return_count) = 0;
+        result = pgr_free(result);
         err << except.what();
         *err_msg = pgr_msg(err.str().c_str());
         *log_msg = pgr_msg(log.str().c_str());
     } catch (std::exception &except) {
-        (*return_tuples) = pgr_free(*return_tuples);
-        (*return_count) = 0;
+        result = pgr_free(result);
         err << except.what();
         *err_msg = pgr_msg(err.str().c_str());
         *log_msg = pgr_msg(log.str().c_str());
     } catch(...) {
-        (*return_tuples) = pgr_free(*return_tuples);
-        (*return_count) = 0;
+        result = pgr_free(result);
         err << "Caught unknown exception!";
         *err_msg = pgr_msg(err.str().c_str());
         *log_msg = pgr_msg(log.str().c_str());

@@ -37,7 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #   include <stddef.h>
 #endif
 
-#include "c_types/vroom/vrp_vroom_rt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,8 +60,7 @@ extern "C" {
             bool plan,
             bool geometry,
 
-            vrp_vroom_rt **return_tuples,
-            size_t *return_count,
+            char **result,
 
             char ** log_msg,
             char ** notice_msg,

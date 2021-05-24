@@ -72,17 +72,15 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
       *
       * @returns results, when results are found
       */
-     std::vector < vrp_vroom_rt > vroom(
+     char *vroom(
              std::string problem_instance_json,
              std::string server_host,
              std::string server_port,
              bool plan,
              bool geometry) {
-         std::vector < vrp_vroom_rt > results;
          std::string solution_str = "Hello World!!!";
          char *solution = new char[solution_str.length() + 1];
          strcpy(solution, solution_str.c_str());
-         results.push_back({solution});
 
 #if 0
          for (auto root : roots) {
@@ -100,7 +98,7 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
          }
 #endif
 
-         return results;
+         return solution;
      }
 
      //@}
