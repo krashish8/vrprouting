@@ -188,7 +188,7 @@ PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
          *
          **********************************************************************/
 
-        size_t num = 1;
+        size_t num = 2;
         values = palloc(num * sizeof(Datum));
         nulls = palloc(num * sizeof(bool));
 
