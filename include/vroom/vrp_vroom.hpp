@@ -78,7 +78,7 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
              std::string server_port,
              bool plan,
              bool geometry) {
-         std::string solution_str = "Hello World!!!";
+         std::string solution_str = "{\"message\": \"Hello World\"}";
          char *solution = new char[solution_str.length() + 1];
          strcpy(solution, solution_str.c_str());
 

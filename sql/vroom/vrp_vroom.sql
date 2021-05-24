@@ -28,24 +28,24 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 -- v0.0
 CREATE FUNCTION vrp_vroom(
-    TEXT, -- vrp_json (required)
+    JSON, -- vrp_json (required)
 
     osrm_host TEXT DEFAULT 'car:0.0.0.0',
     osrm_port TEXT DEFAULT 'car:5000',
     plan BOOLEAN DEFAULT FALSE,
     geometry BOOLEAN DEFAULT FALSE,
 
-    OUT solution TEXT)
-RETURNS TEXT AS
+    OUT solution JSON)
+RETURNS JSON AS
 $BODY$
-    SELECT *
-    FROM _vrp_vroom(_pgr_get_statement($1), _pgr_get_statement($2), _pgr_get_statement($3), $4, $5);
+    SELECT solution::json
+    FROM _vrp_vroom(_pgr_get_statement($1::TEXT), _pgr_get_statement($2), _pgr_get_statement($3), $4, $5);
 $BODY$
 LANGUAGE SQL VOLATILE STRICT;
 
 -- COMMENTS
 
-COMMENT ON FUNCTION vrp_vroom(TEXT, TEXT, TEXT, BOOLEAN, BOOLEAN)
+COMMENT ON FUNCTION vrp_vroom(JSON, TEXT, TEXT, BOOLEAN, BOOLEAN)
 IS 'vrp_vroom
  - EXPERIMENTAL
  - Parameters:
