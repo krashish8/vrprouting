@@ -79,7 +79,7 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
              bool plan,
              bool geometry) {
          std::vector < vrp_vroom_rt > results;
-         std::string solution_str = "Solution";
+         std::string solution_str = "Hello World!!!";
          char *solution = new char[solution_str.length() + 1];
          strcpy(solution, solution_str.c_str());
          results.push_back({solution});

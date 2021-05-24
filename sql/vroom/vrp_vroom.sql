@@ -35,9 +35,8 @@ CREATE FUNCTION vrp_vroom(
     plan BOOLEAN DEFAULT FALSE,
     geometry BOOLEAN DEFAULT FALSE,
 
-    OUT seq INTEGER,
     OUT solution TEXT)
-RETURNS SETOF RECORD AS
+RETURNS TEXT AS
 $BODY$
     SELECT *
     FROM _vrp_vroom(_pgr_get_statement($1), _pgr_get_statement($2), _pgr_get_statement($3), $4, $5);

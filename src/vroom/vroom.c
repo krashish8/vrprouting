@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include "c_common/postgres_connection.h"
 // #include "utils/array.h"
@@ -120,92 +121,34 @@ process(
  */
 
 PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
-    FuncCallContext     *funcctx;
-    TupleDesc           tuple_desc;
-
     vrp_vroom_rt *result_tuples = NULL;
     size_t result_count = 0;
 
-    if (SRF_IS_FIRSTCALL()) {
-        MemoryContext   oldcontext;
-        funcctx = SRF_FIRSTCALL_INIT();
-        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-        /***********************************************************************
-         *
-         *   vrp_vroom(
-         *       vrp_json JSON,
-         *       osrm_host TEXT DEFAULT 'car:0.0.0.0',
-         *       osrm_port TEXT DEFAULT 'car:5000'
-         *       plan BOOLEAN DEFAULT FALSE,
-         *       geometry BOOLEAN DEFAULT FALSE
-         *   );
-         *
-         **********************************************************************/
+    /***********************************************************************
+     *
+     *   vrp_vroom(
+     *       vrp_json JSON,
+     *       osrm_host TEXT DEFAULT 'car:0.0.0.0',
+     *       osrm_port TEXT DEFAULT 'car:5000'
+     *       plan BOOLEAN DEFAULT FALSE,
+     *       geometry BOOLEAN DEFAULT FALSE
+     *   );
+     *
+     **********************************************************************/
 
-        process(
-                text_to_cstring(PG_GETARG_TEXT_P(0)),
-                text_to_cstring(PG_GETARG_TEXT_P(1)),
-                text_to_cstring(PG_GETARG_TEXT_P(2)),
-                PG_GETARG_BOOL(3),
-                PG_GETARG_BOOL(4),
-                &result_tuples,
-                &result_count);
+    process(
+            text_to_cstring(PG_GETARG_TEXT_P(0)),
+            text_to_cstring(PG_GETARG_TEXT_P(1)),
+            text_to_cstring(PG_GETARG_TEXT_P(2)),
+            PG_GETARG_BOOL(3),
+            PG_GETARG_BOOL(4),
+            &result_tuples,
+            &result_count);
 
+    assert(result_count == 1);
 
+    Datum result = CStringGetTextDatum(result_tuples[0].solution);
 
-#if PGSQL_VERSION > 95
-        funcctx->max_calls = result_count;
-#else
-        funcctx->max_calls = (uint32_t)result_count;
-#endif
-        funcctx->user_fctx = result_tuples;
-        if (get_call_result_type(fcinfo, NULL, &tuple_desc)
-                != TYPEFUNC_COMPOSITE) {
-            ereport(ERROR,
-                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-                     errmsg("function returning record called in context "
-                         "that cannot accept type record")));
-        }
-
-        funcctx->tuple_desc = tuple_desc;
-        MemoryContextSwitchTo(oldcontext);
-    }
-
-    funcctx = SRF_PERCALL_SETUP();
-    tuple_desc = funcctx->tuple_desc;
-    result_tuples = (vrp_vroom_rt*) funcctx->user_fctx;
-
-    if (funcctx->call_cntr < funcctx->max_calls) {
-        HeapTuple    tuple;
-        Datum        result;
-        Datum        *values;
-        bool*        nulls;
-
-        /***********************************************************************
-         *
-         *   OUT solution JSON
-         *
-         **********************************************************************/
-
-        size_t num = 2;
-        values = palloc(num * sizeof(Datum));
-        nulls = palloc(num * sizeof(bool));
-
-
-        size_t i;
-        for (i = 0; i < num; ++i) {
-            nulls[i] = false;
-        }
-
-        values[0] = Int64GetDatum(funcctx->call_cntr + 1);
-        values[1] = CStringGetTextDatum(result_tuples[funcctx->call_cntr].solution);
-
-        tuple = heap_form_tuple(tuple_desc, values, nulls);
-        result = HeapTupleGetDatum(tuple);
-
-        SRF_RETURN_NEXT(funcctx, result);
-    } else {
-        SRF_RETURN_DONE(funcctx);
-    }
+    PG_RETURN_TEXT_P(result);
 }
