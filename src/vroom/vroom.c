@@ -99,10 +99,6 @@ process(
 
     time_msg("processing pgr_vroom", start_t, clock());
 
-    PGR_DBG("result tuples");
-    PGR_DBG(result_tuples[0]->solution);
-    PGR_DBG("result tuples");
-
     if (err_msg && (*result_tuples)) {
         pfree(*result_tuples);
         (*result_tuples) = NULL;
@@ -179,10 +175,8 @@ PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
     funcctx = SRF_PERCALL_SETUP();
     tuple_desc = funcctx->tuple_desc;
     result_tuples = (vrp_vroom_rt*) funcctx->user_fctx;
-    PGR_DBG("PPP");
 
     if (funcctx->call_cntr < funcctx->max_calls) {
-        PGR_DBG("OOO");
         HeapTuple    tuple;
         Datum        result;
         Datum        *values;
@@ -204,21 +198,11 @@ PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
             nulls[i] = false;
         }
 
-        PGR_DBG("HHH");
-        PGR_DBG("%d", funcctx->call_cntr + 1);
-        PGR_DBG("%s", result_tuples[funcctx->call_cntr].solution);
         values[0] = Int64GetDatum(funcctx->call_cntr + 1);
-        PGR_DBG("FFF");
-        values[1] = CStringGetDatum(result_tuples[funcctx->call_cntr].solution);
-        PGR_DBG("%d", values[0]);
-        PGR_DBG(values[1]);
+        values[1] = CStringGetTextDatum(result_tuples[funcctx->call_cntr].solution);
 
         tuple = heap_form_tuple(tuple_desc, values, nulls);
         result = HeapTupleGetDatum(tuple);
-
-        pfree(values[0]);
-        pfree(values[1]);
-        pfree(values);
 
         SRF_RETURN_NEXT(funcctx, result);
     } else {

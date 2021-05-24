@@ -76,10 +76,6 @@ vrp_vroom(
     pgrouting::functions::Vrp_vroom fn_vroom;
     std::vector < vrp_vroom_rt > results = fn_vroom.vroom(problem_instance_json, server_host, server_port, plan, geometry);
     log += fn_vroom.get_log();
-    for (auto i : results) {
-        log += i.solution;
-        log += " llll\n";
-    }
     return results;
 }
 
@@ -144,13 +140,9 @@ do_vrp_vroom(
         // pgassert(!count);
 
         (*return_tuples) = pgr_alloc(count, (*return_tuples));
-        log << count << " hahaaaa\n";
         for (size_t i = 0; i < count; i++) {
             *((*return_tuples) + i) = results[i];
-            log << results[i].solution << " haha\n";
         }
-        log << count << '\n';
-        log << "SDFDSF\n";
         (*return_count) = count;
 
         pgassert(*err_msg == NULL);
