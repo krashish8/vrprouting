@@ -37,6 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 // #include "cpp_common/pgr_base_graph.hpp"
 // #include "cpp_common/interruption.h"
 #include "cpp_common/pgr_messages.h"
+#include "vroom/libvroom.hpp"
 
 
 /** @file vrp_vroom.hpp
@@ -81,6 +82,8 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
          std::string solution_str = "{\"message\": \"Hello World\"}";
          char *solution = new char[solution_str.length() + 1];
          strcpy(solution, solution_str.c_str());
+
+         run_example_with_custom_matrix();
 
 #if 0
          for (auto root : roots) {

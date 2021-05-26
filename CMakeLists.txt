@@ -70,7 +70,7 @@ endif()
 #-----------------------------------------------------------------------------
 
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
 #---------------------------------------------
@@ -298,7 +298,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     )
 endif()
 
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/home/ashish/Documents/gsoc/vroom/src")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L/home/ashish/Documents/gsoc/vroom/lib/ -lvroom -lboost_system -lpthread -lssl -lcrypto -lglpk -D USE_LIBGLPK=true")
+#add_compile_options(-Wl,--whole-archive /home/ashish/Documents/gsoc/vroom/lib/libvroom.a -Wl,--no-whole-archive)
+#LINK_DIRECTORIES(/home/ashish/Documents/gsoc/vroom/lib/)
+#ADD_EXECUTABLE(X libvroom.a)
+#ADD_DEPENDENCIES("${PROJECT_NAME}" vroom boost_system pthread ssl crypto)
+#LINK_LIBRARIES("${PROJECT_NAME}" vroom boost_system pthread ssl crypto)
+#ADD_LIBRARY("${PROJECT_NAME}" vroom)
+link_libraries(/home/ashish/Documents/gsoc/vroom/lib/libvroom.a)
+link_libraries(/usr/include/glpk.h)
+link_libraries(/usr/lib/x86_64-linux-gnu/libssl.a)
+link_libraries(/usr/lib/x86_64-linux-gnu/libcrypto.a)
 
 #-------------------
 # add the subdirectories that have the C/C++ code
@@ -308,6 +319,44 @@ foreach (subdir ${PROJECT_SRC_DIRECTORIES})
   add_subdirectory("${PROJECT_SOURCE_DIR}/src/${subdir}")
 endforeach()
 
+
+
+
+find_path(
+  GLPK_INCLUDE_DIR
+  glpk.h
+  PATHS /usr/local/include /usr/include
+)
+
+link_libraries(/usr/include/glpk.h)
+
+if( GLPK_INCLUDE_DIR )
+  find_library(
+    GLPK_LIBRARY
+    NAMES libglpk.so libglpk.a
+    PATHS /usr/lib64 /usr/local/lib /usr/lib
+  )
+  if( GLPK_LIBRARY )
+    set(GLPK_LIBRARY_DIR "")
+    get_filename_component(GLPK_LIBRARY_DIRS ${GLPK_LIBRARY} PATH)
+    # Set uncached variables as per standard.
+    set(GLPK_FOUND ON)
+    set(GLPK_INCLUDE_DIRS ${GLPK_INCLUDE_DIR})
+    set(GLPK_LIBRARIES ${GLPK_LIBRARY})
+  endif(GLPK_LIBRARY)
+else(GLPK_INCLUDE_DIR)
+  message(STATUS "FindGLPK: Could not find glpk.h")
+endif(GLPK_INCLUDE_DIR)
+
+if(GLPK_FOUND)
+  if(NOT GLPK_FIND_QUIETLY)
+    message(STATUS "FindGLPK: Found both glpk.h and libglpk.a")
+  endif(NOT GLPK_FIND_QUIETLY)
+else(GLPK_FOUND)
+  if(GLPK_FIND_REQUIRED)
+    message(STATUS "FindGLPK: Could not find glpk.h and/or libglpk.a")
+  endif(GLPK_FIND_REQUIRED)
+endif(GLPK_FOUND)
 
 
 #-----------------------------------------------------------------------------
