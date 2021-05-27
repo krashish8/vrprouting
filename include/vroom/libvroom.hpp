@@ -1,90 +1,90 @@
 #include <iostream>
 
-#include "routing/osrm_routed_wrapper.h"
+// #include "routing/osrm_routed_wrapper.h"
 #include "structures/vroom/input/input.h"
-#include "structures/generic/matrix.h"
-#include "structures/vroom/job.h"
-#include "structures/vroom/vehicle.h"
-#include "utils/exception.h"
+// #include "structures/generic/matrix.h"
+// #include "structures/vroom/job.h"
+// #include "structures/vroom/vehicle.h"
+// #include "utils/exception.h"
 
-// void log_solution(const vroom::Solution& sol, bool geometry) {
-//   std::cout << "Total cost: " << sol.summary.cost << std::endl;
-//   std::cout << "Unassigned: " << sol.summary.unassigned << std::endl;
+void log_solution(std::ostringstream &log, const vroom::Solution& sol, bool geometry) {
+  log << "Total cost: " << sol.summary.cost << std::endl;
+  log << "Unassigned: " << sol.summary.unassigned << std::endl;
 
-//   // Log unassigned jobs if any.
-//   std::cout << "Unassigned job ids: ";
-//   for (const auto& j : sol.unassigned) {
-//     std::cout << j.id << ", ";
-//   }
-//   std::cout << std::endl;
+  // Log unassigned jobs if any.
+  log << "Unassigned job ids: ";
+  for (const auto& j : sol.unassigned) {
+    log << j.id << ", ";
+  }
+  log << std::endl;
 
-//   // Describe routes in solution.
-//   for (const auto& route : sol.routes) {
-//     std::cout << "Steps for vehicle " << route.vehicle
-//               << " (cost: " << route.cost;
-//     std::cout << " - duration: " << route.duration;
-//     std::cout << " - service: " << route.service;
-//     if (geometry) {
-//       std::cout << " - distance: " << route.distance;
-//     }
+  // Describe routes in solution.
+  for (const auto& route : sol.routes) {
+    log << "Steps for vehicle " << route.vehicle
+              << " (cost: " << route.cost;
+    log << " - duration: " << route.duration;
+    log << " - service: " << route.service;
+    if (geometry) {
+      log << " - distance: " << route.distance;
+    }
 
-//     std::cout << ")" << std::endl;
+    log << ")" << std::endl;
 
-//     // Describe all route steps.
-//     for (const auto& step : route.steps) {
-//       std::string type;
-//       switch (step.step_type) {
-//       case vroom::STEP_TYPE::START:
-//         type = "Start";
-//         break;
-//       case vroom::STEP_TYPE::END:
-//         type = "End";
-//         break;
-//       case vroom::STEP_TYPE::BREAK:
-//         type = "Break";
-//         break;
-//       case vroom::STEP_TYPE::JOB:
-//         switch (step.job_type) {
-//         case vroom::JOB_TYPE::SINGLE:
-//           type = "Job";
-//           break;
-//         case vroom::JOB_TYPE::PICKUP:
-//           type = "Pickup";
-//           break;
-//         case vroom::JOB_TYPE::DELIVERY:
-//           type = "Delivery";
-//           break;
-//         }
-//         break;
-//       }
-//       std::cout << type;
+    // Describe all route steps.
+    for (const auto& step : route.steps) {
+      std::string type;
+      switch (step.step_type) {
+      case vroom::STEP_TYPE::START:
+        type = "Start";
+        break;
+      case vroom::STEP_TYPE::END:
+        type = "End";
+        break;
+      case vroom::STEP_TYPE::BREAK:
+        type = "Break";
+        break;
+      case vroom::STEP_TYPE::JOB:
+        switch (step.job_type) {
+        case vroom::JOB_TYPE::SINGLE:
+          type = "Job";
+          break;
+        case vroom::JOB_TYPE::PICKUP:
+          type = "Pickup";
+          break;
+        case vroom::JOB_TYPE::DELIVERY:
+          type = "Delivery";
+          break;
+        }
+        break;
+      }
+      log << type;
 
-//       // Add job/pickup/delivery/break ids.
-//       if (step.step_type != vroom::STEP_TYPE::START and
-//           step.step_type != vroom::STEP_TYPE::END) {
-//         std::cout << " " << step.id;
-//       }
+      // Add job/pickup/delivery/break ids.
+      if (step.step_type != vroom::STEP_TYPE::START and
+          step.step_type != vroom::STEP_TYPE::END) {
+        log << " " << step.id;
+      }
 
-//       // Add location if known.
-//       if (step.location.has_coordinates()) {
-//         std::cout << " - " << step.location.lon() << ";" << step.location.lat();
-//       }
+      // Add location if known.
+      if (step.location.has_coordinates()) {
+        log << " - " << step.location.lon() << ";" << step.location.lat();
+      }
 
-//       std::cout << " - arrival: " << step.arrival;
-//       std::cout << " - duration: " << step.duration;
-//       std::cout << " - service: " << step.service;
+      log << " - arrival: " << step.arrival;
+      log << " - duration: " << step.duration;
+      log << " - service: " << step.service;
 
-//       // Add extra step info if geometry is required.
-//       if (geometry) {
-//         std::cout << " - distance: " << step.distance;
-//       }
-//       std::cout << std::endl;
-//     }
-//   }
-// }
+      // Add extra step info if geometry is required.
+      if (geometry) {
+        log << " - distance: " << step.distance;
+      }
+      log << std::endl;
+    }
+  }
+}
 
 
-void run_example_with_custom_matrix() {
+void run_example_with_custom_matrix(std::ostringstream &log) {
   bool GEOMETRY = false;
   unsigned amount_dimension = 0; // No capacity constraint.
 
@@ -136,5 +136,5 @@ void run_example_with_custom_matrix() {
   auto sol = problem_instance.solve(5,  // Exploration level.
                                     4); // Use 4 threads.
 
-  // log_solution(sol, GEOMETRY);
+  log_solution(log, sol, GEOMETRY);
 }

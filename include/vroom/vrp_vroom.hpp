@@ -83,7 +83,7 @@ class Vrp_vroom : public vrprouting::Pgr_messages {
          char *solution = new char[solution_str.length() + 1];
          strcpy(solution, solution_str.c_str());
 
-         run_example_with_custom_matrix();
+         run_example_with_custom_matrix(log);
 
 #if 0
          for (auto root : roots) {
