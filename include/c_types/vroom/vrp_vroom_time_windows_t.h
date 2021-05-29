@@ -1,5 +1,5 @@
 /*PGR-GNU*****************************************************************
-File: vrp_vroom_jobs_t.h
+File: vrp_vroom_time_windows_t.h
 
 Copyright (c) 2021 pgRouting developers
 Mail: project@pgrouting.org
@@ -27,8 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  ********************************************************************PGR-GNU*/
 /*! @file */
 
-#ifndef INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
-#define INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
+#ifndef INCLUDE_C_TYPES_VROOM_VRP_VROOM_TIME_WINDOWS_T_H_
+#define INCLUDE_C_TYPES_VROOM_VRP_VROOM_TIME_WINDOWS_T_H_
 #pragma once
 
 /* for int64_t */
@@ -38,36 +38,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #   include <stdint.h>
 #endif
 
-#include "c_types/vroom/vrp_vroom_time_windows_t.h"
-
 /**************************************************************************
  * vroom types
  * ***********************************************************************/
 /*
- * vroom jobs
+ * vroom time windows
  */
 typedef struct {
-    int64_t id;
-    int64_t location_index;
+    int start_time;
+    int end_time;
+} vrp_vroom_time_windows_t;
 
-    int service;
-
-    int64_t *delivery;
-    size_t delivery_size;
-
-    int64_t *pickup;
-    size_t pickup_size;
-
-    int *skills;
-    size_t skills_size;
-
-    int priority;
-
-    // TODO(ashish): Delete this.
-    // char *time_windows_sql;
-
-    vrp_vroom_time_windows_t *time_windows;
-    int time_windows_size;
-} vrp_vroom_jobs_t;
-
-#endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
+#endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_TIME_WINDOWS_T_H_

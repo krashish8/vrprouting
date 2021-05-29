@@ -11,6 +11,7 @@ ADD_LIBRARY(common OBJECT
     time_msg.c
     pgr_alloc.cpp
 
+    vroom/time_windows_input.c
     vroom/jobs_input.c
     # vroom/matrix_input.c
     # vroom/shipments_input.c

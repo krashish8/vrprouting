@@ -27,12 +27,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  ********************************************************************PGR-GNU*/
 
 #include "c_common/vroom/jobs_input.h"
+#include "c_common/vroom/time_windows_input.h"
 
 #include "c_types/column_info_t.h"
 
 #include "c_common/debug_macro.h"
 #include "c_common/get_check_data.h"
 #include "c_common/time_msg.h"
+
 
 // TODO(ashish): At the end, check and remove all unnecessary includes
 
@@ -55,7 +57,8 @@ void fetch_jobs(
      */
     job->delivery_size = 0;
     job->delivery = column_found(info[3].colNumber) ?
-        pgr_SPI_getBigIntArr(tuple, tupdesc, info[3], &job->delivery_size) : NULL;
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[3], &job->delivery_size)
+        : NULL;
 
     /*
      * The pickups
@@ -70,8 +73,14 @@ void fetch_jobs(
 
     job->priority = column_found(info[6].colNumber) ?
         pgr_SPI_getBigInt(tuple, tupdesc, info[6]) : 0;
-    job->time_windows_sql = column_found(info[7].colNumber) ?
-        pgr_SPI_getText(tuple, tupdesc, info[7]) : "DEFAULT";
+
+    job->time_windows_size = 0;
+    if (column_found(info[7].colNumber)) {
+        char *time_windows_sql = pgr_SPI_getText(tuple, tupdesc, info[7]);
+        PGR_DBG("%s", time_windows_sql);
+        vrp_get_vroom_time_windows(time_windows_sql, &job->time_windows,
+                                   &job->time_windows_size);
+    }
 }
 
 
@@ -107,12 +116,16 @@ vrp_get_vroom_jobs_general(
     info[6].name = "priority";
     info[7].name = "time_windows_sql";
 
-    // TODO(ashish): Check for ANY_INTEGER, INTEGER, etc types in info[x].name. Better change INTEGER to ANY_INTEGER
+    // TODO(ashish): Check for ANY_INTEGER, INTEGER, etc types in info[x].name.
+    //               Better change INTEGER to ANY_INTEGER
 
     // TODO(ashish): info[2].eType = INTEGER;
     info[3].eType = ANY_INTEGER_ARRAY;
     info[4].eType = ANY_INTEGER_ARRAY;
-    info[5].eType = ANY_INTEGER_ARRAY;  // TODO(ashish): info[5].eType = INTEGER_ARRAY;
+
+    // TODO(ashish): info[5].eType = INTEGER_ARRAY;
+    info[5].eType = ANY_INTEGER_ARRAY;
+
     // TODO(ashish): info[6].eType = INTEGER;
     info[7].eType = TEXT;
 

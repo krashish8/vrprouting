@@ -96,11 +96,15 @@ process(
     PGR_DBG("id: %ld", jobs->id);
     PGR_DBG("location_index: %ld", jobs->location_index);
     PGR_DBG("service: %ld", jobs->service);
-    PGR_DBG("delivery: %ld", jobs->delivery);
-    PGR_DBG("pickup: %ld", jobs->pickup);
-    PGR_DBG("skills: %ld", jobs->skills);
+    PGR_DBG("delivery: %ld", *(jobs->delivery));
+    PGR_DBG("pickup: %ld", *(jobs->pickup));
+    PGR_DBG("skills: %ld", *(jobs->skills));
     PGR_DBG("priority: %ld", jobs->priority);
-    PGR_DBG("time_windows_sql: %s", jobs->time_windows_sql);
+
+    for(int i = 0; i < jobs->time_windows_size; i++) {
+        PGR_DBG("(%d) time_windows start: %ld", i, (*(jobs->time_windows + i)).start_time);
+        PGR_DBG("(%d) time_windows end: %ld", i, (*(jobs->time_windows + i)).end_time);
+    }
 
 #if 0
     vrp_vroom_shipments_t *shipments = NULL;

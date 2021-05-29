@@ -1,5 +1,5 @@
 /*PGR-GNU*****************************************************************
-File: vrp_vroom_jobs_t.h
+File: time_windows_input.h
 
 Copyright (c) 2021 pgRouting developers
 Mail: project@pgrouting.org
@@ -25,49 +25,24 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
-/*! @file */
 
-#ifndef INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
-#define INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
+#ifndef INCLUDE_C_COMMON_VROOM_TIME_WINDOWS_INPUT_H_
+#define INCLUDE_C_COMMON_VROOM_TIME_WINDOWS_INPUT_H_
 #pragma once
 
-/* for int64_t */
-#ifdef __cplusplus
-#   include <cstdint>
-#else
-#   include <stdint.h>
-#endif
-
+#include <stddef.h>
 #include "c_types/vroom/vrp_vroom_time_windows_t.h"
 
-/**************************************************************************
- * vroom types
- * ***********************************************************************/
-/*
- * vroom jobs
+/** @brief Reads the VROOM time windows
+ *
+ * @param[in] time_windows_sql
+ * @param[out] time_windows
+ * @param[out] total_time_windows
  */
-typedef struct {
-    int64_t id;
-    int64_t location_index;
+void
+vrp_get_vroom_time_windows(
+        char *time_windows_sql,
+        vrp_vroom_time_windows_t **time_windows,
+        size_t *total_time_windows);
 
-    int service;
-
-    int64_t *delivery;
-    size_t delivery_size;
-
-    int64_t *pickup;
-    size_t pickup_size;
-
-    int *skills;
-    size_t skills_size;
-
-    int priority;
-
-    // TODO(ashish): Delete this.
-    // char *time_windows_sql;
-
-    vrp_vroom_time_windows_t *time_windows;
-    int time_windows_size;
-} vrp_vroom_jobs_t;
-
-#endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
+#endif  // INCLUDE_C_COMMON_VROOM_TIME_WINDOWS_INPUT_H_
