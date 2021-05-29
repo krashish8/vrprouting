@@ -40,6 +40,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/time_msg.h"
 
 #include "c_types/vroom/vrp_vroom_rt.h"
+#include "c_types/vroom/vrp_vroom_jobs_t.h"
+#include "c_types/vroom/vrp_vroom_shipments_t.h"
+#include "c_types/vroom/vrp_vroom_vehicles_t.h"
 
 // #include "c_common/edges_input.h"
 // #include "c_common/arrays_input.h"
@@ -80,23 +83,32 @@ process(
         size_t *result_count) {
     pgr_SPI_connect();
 
-#if 0
-    size_t size_rootsArr = 0;
-
-    int64_t* rootsArr = (int64_t*) pgr_get_bigIntArray(&size_rootsArr, roots);
-
     (*result_tuples) = NULL;
     (*result_count) = 0;
 
-    pgr_edge_t *edges = NULL;
-    size_t total_edges = 0;
+#if 0
+    vrp_vroom_jobs_t *jobs = NULL;
+    size_t total_jobs = 0;
 
-    pgr_get_edges(edges_sql, &edges, &total_edges);
+    vrp_vroom_shipments_t *shipments = NULL;
+    size_t total_shipments = 0;
+
+    vrp_vroom_vehicles_t *vehicles = NULL;
+    size_t total_vehicles = 0;
+
+    pgr_edge_t *matrix_cells = NULL;
+    size_t total_cells = 0;
+
+    vrp_get_vroom_jobs(jobs_sql, &jobs, &total_jobs);
+    vrp_get_vroom_shipments(shipments_sql, &shipments, &total_shipments);
+    vrp_get_vroom_vehicles(vehicles_sql, &vehicles, &total_vehicles);
+    vrp_get_vroom_matrix(matrix_sql, &matrix_cells, &total_cells);
 
     clock_t start_t = clock();
     char *log_msg = NULL;
     char *notice_msg = NULL;
     char *err_msg = NULL;
+
     do_pgr_depthFirstSearch(
             edges, total_edges,
             rootsArr, size_rootsArr,
@@ -110,7 +122,7 @@ process(
             &notice_msg,
             &err_msg);
 
-    time_msg("processing pgr_depthFirstSearch", start_t, clock());
+    time_msg("processing vrp_vroom", start_t, clock());
 
     if (err_msg && (*result_tuples)) {
         pfree(*result_tuples);
@@ -124,7 +136,6 @@ process(
     if (notice_msg) pfree(notice_msg);
     if (err_msg) pfree(err_msg);
     if (edges) pfree(edges);
-    if (rootsArr) pfree(rootsArr);
 #endif
 
     pgr_SPI_finish();

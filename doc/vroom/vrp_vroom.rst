@@ -155,7 +155,7 @@ Column              Type                       Default     Description
 ==================  =========================  =========== ================================================
 **id**              ``ANY-INTEGER``                        Non-negative unique identifier of the job.
 
-**location_index**  ``SMALLINT``                           Non-negative index of relevant row and column
+**location_index**  ``ANY-INTEGER``                        Non-negative index of relevant row and column
                                                            in the custom matrix, denoting job location.
 
                                                            - Ranges from ``[0, SIZE[matrix]-1]``
@@ -190,6 +190,8 @@ Column              Type                       Default     Description
                                                            - :code:`time_window[1] ≤ time_window[2]``
 ==================  =========================  =========== ================================================
 
+.. TODO: Fix location_index, changed SMALLINT TO ANY-INTEGER
+
 Where:
 
 :ANY-INTEGER: SMALLINT, INTEGER, BIGINT
@@ -212,7 +214,7 @@ Column                Type                       Default     Description
 **p_id**              ``ANY-INTEGER``                         Non-negative unique identifier of the pickup
                                                               shipment (unique for pickup).
 
-**p_location_index**  ``SMALLINT``                            Non-negative index of relevant row and column
+**p_location_index**  ``ANY-INTEGER``                         Non-negative index of relevant row and column
                                                               in the custom matrix, denoting pickup location.
 
                                                               - Ranges from ``[0, SIZE[matrix]-1]``
@@ -228,7 +230,7 @@ Column                Type                       Default     Description
 **d_id**              ``ANY-INTEGER``                         Non-negative unique identifier of the delivery
                                                               shipment (unique for delivery).
 
-**d_location_index**  ``SMALLINT``                            Non-negative index of relevant row and column
+**d_location_index**  ``ANY-INTEGER``                         Non-negative index of relevant row and column
                                                               in the custom matrix, denoting delivery location.
 
                                                               - Ranges from ``[0, SIZE[matrix]-1]``
@@ -279,12 +281,12 @@ Column              Type                                   Description
 ==================  ====================================== ================================================
 **id**              ``ANY-INTEGER``                        Non-negative unique identifier of the job.
 
-**start_index**     ``SMALLINT``                           Non-negative index of relevant row and column
+**start_index**     ``ANY-INTEGER``                        Non-negative index of relevant row and column
                                                            in the custom matrix, denoting vehicle start.
 
                                                            - Ranges from ``[0, SIZE[matrix]-1]``
 
-**end_index**       ``SMALLINT``                           Non-negative index of relevant row and column
+**end_index**       ``ANY-INTEGER``                        Non-negative index of relevant row and column
                                                            in the custom matrix, denoting vehicle end.
 
                                                            - Ranges from ``[0, SIZE[matrix]-1]``

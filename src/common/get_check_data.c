@@ -121,8 +121,8 @@ pgr_check_any_integer_type(Column_info_t info) {
                 || info.type == INT4OID
                 || info.type == INT8OID)) {
         elog(ERROR,
-                "Unexpected Column '%s' type. Expected ANY-INTEGER",
-                info.name);
+                "Unexpected Column '%s' type. Expected ANY-INTEGER. Found %ld",
+                info.name, info.type);
     }
 }
 
