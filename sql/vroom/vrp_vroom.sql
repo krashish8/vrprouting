@@ -28,36 +28,49 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 -- v0.0
 CREATE FUNCTION vrp_vroom(
-    JSON, -- vrp_json (required)
+    TEXT,  -- jobs_sql (required)
+    TEXT,  -- shipments_sql (required)
+    TEXT,  -- vehicles_sql (required)
+    TEXT,  -- matrix_sql (required)
 
-    osrm_host TEXT DEFAULT 'car:0.0.0.0',
-    osrm_port TEXT DEFAULT 'car:5000',
     plan BOOLEAN DEFAULT FALSE,
-    geometry BOOLEAN DEFAULT FALSE,
 
-    OUT solution JSON)
-RETURNS JSON AS
+    OUT seq BIGINT,
+    OUT vehicles_seq BIGINT,
+    OUT vehicles_id BIGINT,
+    OUT step_seq BIGINT,
+    OUT step_type INTEGER,
+    OUT task_id BIGINT,
+    OUT arrival INTEGER,
+    OUT duration INTEGER,
+    OUT service_time INTEGER,
+    OUT waiting_time INTEGER,
+    OUT load BIGINT)
+RETURNS SETOF RECORD AS
 $BODY$
-    SELECT solution::json
-    FROM _vrp_vroom(_pgr_get_statement($1::TEXT), _pgr_get_statement($2), _pgr_get_statement($3), $4, $5);
+    SELECT *
+    FROM _vrp_vroom(_pgr_get_statement($1), _pgr_get_statement($2), _pgr_get_statement($3),
+                    _pgr_get_statement($4), $5);
 $BODY$
-LANGUAGE SQL VOLATILE STRICT;
+LANGUAGE SQL VOLATILE;
 
 -- COMMENTS
 
-COMMENT ON FUNCTION vrp_vroom(JSON, TEXT, TEXT, BOOLEAN, BOOLEAN)
+COMMENT ON FUNCTION vrp_vroom(TEXT, TEXT, TEXT, TEXT, BOOLEAN)
 IS 'vrp_vroom
  - EXPERIMENTAL
  - Parameters:
-   - vrp_json: JSON object with following keys:
-     - jobs: Array of job objects describing the places to visit.
-     - shipments: Array of shipment objects describing pickup and delivery tasks.
-     - vehicles: Array of vehicle objects describing the available vehicles.
+   - Jobs SQL with columns:
+       id, location_index [, service, delivery, pickup, skills, priority, time_windows]
+   - Shipments SQL with columns:
+       p_id, p_location_index [, p_service, p_time_windows],
+       d_id, d_location_index [, d_service, d_time_windows] [, amount, skills, priority]
+   - Vehicles SQL with columns:
+       id, start_index, end_index
+       [, service, delivery, pickup, skills, priority, time_window, breaks_sql, steps_sql]
+   - 2-D Time Matrix.
  - Optional Parameters:
-   - osrm_host: default := car:0.0.0.0
-   - osrm_port: default := car:5000
-   - plan: default := FALSE
-   - geometry: default := FALSE
+   - plan := FALSE
 - Documentation:
    - ${PROJECT_DOC_LINK}/vrp_vroom.html
 ';

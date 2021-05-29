@@ -98,9 +98,11 @@ Signature
 
 .. code-block:: none
 
-    vrp_vroom(Jobs SQL, Shipments SQL, Vehicles SQL, Matrix SQL [, plan])
+    vrp_vroom(Jobs SQL, Shipments SQL, Vehicles SQL, Matrix SQL, [, plan])
 
-    RETURNS SET OF [TODO]
+    RETURNS SET OF
+    (seq, vehicle_sql, vehicle_id, step_seq, step_type, task_id,
+     arrival, duration, service_time, waiting_time, load)
 
 
 Parameters
@@ -112,8 +114,8 @@ Parameter           Type                     Description
 **Jobs SQL**        ``TEXT``                 `Jobs SQL`_ query describing the places to visit.
 **Shipments SQL**   ``TEXT``                 `Shipments SQL`_ query describing pickup and delivery tasks.
 **Vehicles SQL**    ``TEXT``                 `Vehicles SQL`_ query describing the available vehicles.
-**Matrix**          ``ARRAY[ARRAY[INTEGER]`` Two-dimensional square matrix describing the
-                                             distance or travel times between the locations.
+**Matrix SQL**      ``TEXT``                 `Time Matrix SQL`_ query containing the distance or
+                                             travel times between the locations.
 =================== ======================== =================================================
 
 Note:
@@ -386,6 +388,25 @@ Where:
 :ANY-INTEGER: SMALLINT, INTEGER, BIGINT
 
 
+Time Matrix SQL
+.........................................................................................
+
+A ``SELECT`` statement that returns the following columns:
+
+::
+
+    start_index, end_index, agg_cost
+
+=============== ================= ================================================
+Column          Type              Description
+=============== ================= ================================================
+**start_index** ``ANY-INTEGER``   Identifier of the start node.
+**end_index**   ``ANY-INTEGER``   Identifier of the end node.
+**agg_cost**    ``INTEGER``       Time to travel from ``start_vid`` to ``end_vid``
+=============== ================= ================================================
+
+.. TODO: Add Vehicle Profiles
+
 Result Columns
 -------------------------------------------------------------------------------
 
@@ -393,14 +414,14 @@ Result Columns
 =================== ============= =================================================
 Column              Type           Description
 =================== ============= =================================================
-**seq**              ``INTEGER``  Sequential value starting from **1**.
+**seq**              ``BIGINT``   Sequential value starting from **1**.
 
-**vehicle_seq**      ``INTEGER``  Sequential value starting from **1** for current vehicles.
+**vehicle_seq**      ``BIGINT``   Sequential value starting from **1** for current vehicles.
                                   The :math:`n^{th}` vehicle in the solution.
 
 **vehicle_id**       ``BIGINT``   Current vehicle identifier.
 
-**step_seq**         ``INTEGER``  Sequential value starting from **1** for the stops
+**step_seq**         ``BIGINT``   Sequential value starting from **1** for the stops
                                   made by the current vehicle. The :math:`m^{th}` stop
                                   of the current vehicle.
 
@@ -413,7 +434,7 @@ Column              Type           Description
                                   - ``5``: Break location
                                   - ``6``: Ending location
 
-**task_id**          ``INTEGER``  Identifier of the task performed at this step.
+**task_id**          ``BIGINT``   Identifier of the task performed at this step.
 
 **arrival**          ``INTEGER``  Estimated time of arrival at this step, in seconds.
 

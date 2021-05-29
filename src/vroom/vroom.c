@@ -39,6 +39,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/e_report.h"
 #include "c_common/time_msg.h"
 
+#include "c_types/vroom/vrp_vroom_rt.h"
+
 // #include "c_common/edges_input.h"
 // #include "c_common/arrays_input.h"
 
@@ -68,46 +70,62 @@ PG_FUNCTION_INFO_V1(_vrp_vroom);
 static
 void
 process(
-        char *vrp_json,
-        char *osrm_host,
-        char *osrm_port,
+        char *jobs_sql,
+        char *shipments_sql,
+        char *vehicles_sql,
+        char *matrix_sql,
         bool plan,
-        bool geometry,
 
-        char **result) {
+        vrp_vroom_rt **result_tuples,
+        size_t *result_count) {
     pgr_SPI_connect();
 
-    (*result) = NULL;
+#if 0
+    size_t size_rootsArr = 0;
+
+    int64_t* rootsArr = (int64_t*) pgr_get_bigIntArray(&size_rootsArr, roots);
+
+    (*result_tuples) = NULL;
+    (*result_count) = 0;
+
+    pgr_edge_t *edges = NULL;
+    size_t total_edges = 0;
+
+    pgr_get_edges(edges_sql, &edges, &total_edges);
 
     clock_t start_t = clock();
     char *log_msg = NULL;
     char *notice_msg = NULL;
     char *err_msg = NULL;
-    do_vrp_vroom(
-            vrp_json,
-            osrm_host,
-            osrm_port,
-            plan,
-            geometry,
+    do_pgr_depthFirstSearch(
+            edges, total_edges,
+            rootsArr, size_rootsArr,
 
-            result,
+            directed,
+            max_depth,
+
+            result_tuples,
+            result_count,
             &log_msg,
             &notice_msg,
             &err_msg);
 
-    time_msg("processing pgr_vroom", start_t, clock());
+    time_msg("processing pgr_depthFirstSearch", start_t, clock());
 
-    if (err_msg && (*result)) {
-        pfree(*result);
-        (*result) = NULL;
+    if (err_msg && (*result_tuples)) {
+        pfree(*result_tuples);
+        (*result_tuples) = NULL;
+        (*result_count) = 0;
     }
 
     pgr_global_report(log_msg, notice_msg, err_msg);
 
-
     if (log_msg) pfree(log_msg);
     if (notice_msg) pfree(notice_msg);
     if (err_msg) pfree(err_msg);
+    if (edges) pfree(edges);
+    if (rootsArr) pfree(rootsArr);
+#endif
 
     pgr_SPI_finish();
 }
@@ -118,29 +136,121 @@ process(
  */
 
 PGDLLEXPORT Datum _vrp_vroom(PG_FUNCTION_ARGS) {
-    char *result = NULL;
+    FuncCallContext     *funcctx;
+    TupleDesc           tuple_desc;
 
-    /***********************************************************************
-     *
-     *   vrp_vroom(
-     *       vrp_json JSON,
-     *       osrm_host TEXT DEFAULT 'car:0.0.0.0',
-     *       osrm_port TEXT DEFAULT 'car:5000'
-     *       plan BOOLEAN DEFAULT FALSE,
-     *       geometry BOOLEAN DEFAULT FALSE
-     *   );
-     *
-     **********************************************************************/
+    /**********************************************************************/
+    vrp_vroom_rt *result_tuples = NULL;
+    size_t result_count = 0;
+    /**********************************************************************/
 
-    process(
-            text_to_cstring(PG_GETARG_TEXT_P(0)),
-            text_to_cstring(PG_GETARG_TEXT_P(1)),
-            text_to_cstring(PG_GETARG_TEXT_P(2)),
-            PG_GETARG_BOOL(3),
-            PG_GETARG_BOOL(4),
-            &result);
+    if (SRF_IS_FIRSTCALL()) {
+        MemoryContext   oldcontext;
+        funcctx = SRF_FIRSTCALL_INIT();
+        oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
-    Datum result_datum = CStringGetTextDatum(result);
+        /***********************************************************************
+         *
+         *   vrp_vroom(
+         *       jobs_sql TEXT,
+         *       shipments_sql TEXT,
+         *       vehicles_sql TEXT,
+         *       matrix ARRAY[ARRAY[INTEGER],
+         *       plan BOOLEAN DEFAULT FALSE
+         *   );
+         *
+         **********************************************************************/
 
-    PG_RETURN_TEXT_P(result_datum);
+        process(
+                text_to_cstring(PG_GETARG_TEXT_P(0)),
+                text_to_cstring(PG_GETARG_TEXT_P(1)),
+                text_to_cstring(PG_GETARG_TEXT_P(2)),
+                text_to_cstring(PG_GETARG_TEXT_P(3)),
+                PG_GETARG_BOOL(4),
+                &result_tuples,
+                &result_count);
+
+        /**********************************************************************/
+
+
+#if PGSQL_VERSION > 95
+        funcctx->max_calls = result_count;
+#else
+        funcctx->max_calls = (uint32_t)result_count;
+#endif
+        funcctx->user_fctx = result_tuples;
+        if (get_call_result_type(fcinfo, NULL, &tuple_desc)
+                != TYPEFUNC_COMPOSITE) {
+            ereport(ERROR,
+                    (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+                     errmsg("function returning record called in context "
+                         "that cannot accept type record")));
+        }
+
+        funcctx->tuple_desc = tuple_desc;
+        MemoryContextSwitchTo(oldcontext);
+    }
+
+    funcctx = SRF_PERCALL_SETUP();
+    tuple_desc = funcctx->tuple_desc;
+    result_tuples = (vrp_vroom_rt*) funcctx->user_fctx;
+
+    if (funcctx->call_cntr < funcctx->max_calls) {
+        HeapTuple    tuple;
+        Datum        result;
+        Datum        *values;
+        bool*        nulls;
+
+        /***********************************************************************
+         *
+         *   OUT seq BIGINT,
+         *   OUT vehicles_seq BIGINT,
+         *   OUT vehicles_id BIGINT,
+         *   OUT step_seq BIGINT,
+         *   OUT step_type INTEGER,
+         *   OUT task_id BIGINT,
+         *   OUT arrival INTEGER,
+         *   OUT duration INTEGER,
+         *   OUT service_time INTEGER,
+         *   OUT waiting_time INTEGER,
+         *   OUT load BIGINT
+         *
+         **********************************************************************/
+
+        size_t num  = 11;
+        values = palloc(num * sizeof(Datum));
+        nulls = palloc(num * sizeof(bool));
+
+
+        size_t i;
+        for (i = 0; i < num; ++i) {
+            nulls[i] = false;
+        }
+
+        values[0] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[1] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[2] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[3] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[4] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[5] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[6] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[7] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[8] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[9] = Int64GetDatum(funcctx->call_cntr + 1);
+        values[10] = Int64GetDatum(funcctx->call_cntr + 1);
+        // values[1] = Int64GetDatum(result_tuples[funcctx->call_cntr].depth);
+        // values[2] = Int64GetDatum(result_tuples[funcctx->call_cntr].from_v);
+        // values[3] = Int64GetDatum(result_tuples[funcctx->call_cntr].node);
+        // values[4] = Int64GetDatum(result_tuples[funcctx->call_cntr].edge);
+        // values[5] = Float8GetDatum(result_tuples[funcctx->call_cntr].cost);
+        // values[6] = Float8GetDatum(result_tuples[funcctx->call_cntr].agg_cost);
+
+        /**********************************************************************/
+
+        tuple = heap_form_tuple(tuple_desc, values, nulls);
+        result = HeapTupleGetDatum(tuple);
+        SRF_RETURN_NEXT(funcctx, result);
+    } else {
+        SRF_RETURN_DONE(funcctx);
+    }
 }

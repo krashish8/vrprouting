@@ -1,13 +1,8 @@
 /*PGR-GNU*****************************************************************
-File: _vrp_vroom.sql
+File: pgr_kruskal_t.h
 
-Copyright (c) 2021 pgRouting developers
-Mail: project@pgrouting.org
-
-Function's developer:
-Copyright (c) 2021 Ashish Kumar
-Mail: ashishkr23438@gmail.com
-
+Copyright (c) 2015 Aditya Pratap Singh
+Mail: adityapratap.singh28@gmail.com
 ------
 
 This program is free software; you can redistribute it and/or modify
@@ -25,32 +20,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
+/*! @file */
 
--- v0.0
-CREATE FUNCTION _vrp_vroom(
-    jobs_sql TEXT,
-    shipments_sql TEXT,
-    vehicles_sql TEXT,
-    matrix_sql TEXT,
+#ifndef INCLUDE_C_TYPES_VRP_VROOM_RT_H_
+#define INCLUDE_C_TYPES_VRP_VROOM_RT_H_
+#pragma once
 
-    plan BOOLEAN DEFAULT FALSE,
+/* for int64_t */
+#ifdef __cplusplus
+#   include <cstdint>
+#else
+#   include <stdint.h>
+#endif
 
-    OUT seq BIGINT,
-    OUT vehicles_seq BIGINT,
-    OUT vehicles_id BIGINT,
-    OUT step_seq BIGINT,
-    OUT step_type INTEGER,
-    OUT task_id BIGINT,
-    OUT arrival INTEGER,
-    OUT duration INTEGER,
-    OUT service_time INTEGER,
-    OUT waiting_time INTEGER,
-    OUT load BIGINT)
-RETURNS SETOF RECORD AS
- 'MODULE_PATHNAME'
-LANGUAGE C VOLATILE;
+typedef struct {
+    int64_t from_v;
+    int64_t depth;
+    int64_t node;
+    int64_t edge;
+    double cost;
+    double agg_cost;
+} vrp_vroom_rt;
 
--- COMMENTS
-
-COMMENT ON FUNCTION _vrp_vroom(TEXT, TEXT, TEXT, TEXT, BOOLEAN)
-IS 'pgRouting internal function';
+#endif  // INCLUDE_C_TYPES_VRP_VROOM_RT_H_
