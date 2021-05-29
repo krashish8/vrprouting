@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
 
-#include "c_common/orders_input.h"
+#include "c_common/vroom/jobs_input.h"
 
 #include "c_types/column_info_t.h"
 
@@ -34,51 +34,50 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/get_check_data.h"
 #include "c_common/time_msg.h"
 
+// TODO(ashish): At the end, check and remove all unnecessary includes
 
 static
 void fetch_jobs(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[14],
-        bool matrix_version,
-        PickDeliveryOrders_t *pd_order) {
-    pd_order->id = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
-    pd_order->demand = pgr_SPI_getFloat8(tuple, tupdesc, info[1]);
+        Column_info_t info[8],
+        vrp_vroom_jobs_t *job) {
+    // TODO(ashish): Change BigInt to Int, wherever required.
+    // TODO(ashish): Check for null in optional columns
+    job->id = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
+    job->location_index = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
+
+    job->service = column_found(info[2].colNumber) ?
+        pgr_SPI_getBigInt(tuple, tupdesc, info[2]) : 0;
 
     /*
-     * the pickups
+     * The deliveries
      */
-    pd_order->pick_x = matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[2]);
-    pd_order->pick_y =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[3]);
-    pd_order->pick_open_t = pgr_SPI_getFloat8(tuple, tupdesc, info[4]);
-    pd_order->pick_close_t = pgr_SPI_getFloat8(tuple, tupdesc, info[5]);
-    pd_order->pick_service_t = column_found(info[6].colNumber) ?
-        pgr_SPI_getFloat8(tuple, tupdesc, info[6]) : 0;
+    job->delivery_size = 0;
+    job->delivery = column_found(info[3].colNumber) ?
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[3], &job->delivery_size) : NULL;
 
     /*
-     * the deliveries
+     * The pickups
      */
-    pd_order->deliver_x =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[7]);
-    pd_order->deliver_y =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[8]);
-    pd_order->deliver_open_t = pgr_SPI_getFloat8(tuple, tupdesc, info[9]);
-    pd_order->deliver_close_t = pgr_SPI_getFloat8(tuple, tupdesc, info[10]);
-    pd_order->deliver_service_t = column_found(info[11].colNumber) ?
-        pgr_SPI_getFloat8(tuple, tupdesc, info[11]) : 0;
+    job->pickup_size = 0;
+    job->pickup = column_found(info[4].colNumber) ?
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[4], &job->pickup_size) : NULL;
 
-    pd_order->pick_node_id = matrix_version ?
-        pgr_SPI_getBigInt(tuple, tupdesc, info[12]) : 0;
-    pd_order->deliver_node_id = matrix_version ?
-        pgr_SPI_getBigInt(tuple, tupdesc, info[13]) : 0;
+    job->skills_size = 0;
+    job->skills = column_found(info[5].colNumber) ?
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[5], &job->skills_size) : NULL;
+
+    job->priority = column_found(info[6].colNumber) ?
+        pgr_SPI_getBigInt(tuple, tupdesc, info[6]) : 0;
+    job->time_windows_sql = column_found(info[7].colNumber) ?
+        pgr_SPI_getText(tuple, tupdesc, info[7]) : "DEFAULT";
 }
 
 
-
+static
 void
-vrp_get_vroom_jobs(
+vrp_get_vroom_jobs_general(
         char *jobs_sql,
         vrp_vroom_jobs_t **jobs,
         size_t *total_jobs) {
@@ -106,14 +105,16 @@ vrp_get_vroom_jobs(
     info[4].name = "pickup";
     info[5].name = "skills";
     info[6].name = "priority";
-    info[7].name = "time_windows";
+    info[7].name = "time_windows_sql";
 
-    // TODO(ashish): Check for ANY_INTEGER, INTEGER, etc types in info[x].name
-#if 0
-    info[0].eType = ANY_INTEGER;
-    info[12].eType = ANY_INTEGER;
-    info[13].eType = ANY_INTEGER;
-#endif
+    // TODO(ashish): Check for ANY_INTEGER, INTEGER, etc types in info[x].name. Better change INTEGER to ANY_INTEGER
+
+    // TODO(ashish): info[2].eType = INTEGER;
+    info[3].eType = ANY_INTEGER_ARRAY;
+    info[4].eType = ANY_INTEGER_ARRAY;
+    info[5].eType = ANY_INTEGER_ARRAY;  // TODO(ashish): info[5].eType = INTEGER_ARRAY;
+    // TODO(ashish): info[6].eType = INTEGER;
+    info[7].eType = TEXT;
 
     /* Only id and location_index are mandatory */
     info[0].strict = true;
@@ -141,12 +142,12 @@ vrp_get_vroom_jobs(
         PGR_DBG("SPI_processed %ld", ntuples);
         if (ntuples > 0) {
             if ((*jobs) == NULL)
-                (*jobs) = (PickDeliveryOrders_t *)palloc0(
-                        total_tuples * sizeof(PickDeliveryOrders_t));
+                (*jobs) = (vrp_vroom_jobs_t *)palloc0(
+                        total_tuples * sizeof(vrp_vroom_jobs_t));
             else
-                (*jobs) = (PickDeliveryOrders_t *)repalloc(
+                (*jobs) = (vrp_vroom_jobs_t *)repalloc(
                         (*jobs),
-                        total_tuples * sizeof(PickDeliveryOrders_t));
+                        total_tuples * sizeof(vrp_vroom_jobs_t));
 
             if ((*jobs) == NULL) {
                 elog(ERROR, "Out of memory");
@@ -158,7 +159,7 @@ vrp_get_vroom_jobs(
             PGR_DBG("processing %ld", ntuples);
             for (t = 0; t < ntuples; t++) {
                 HeapTuple tuple = tuptable->vals[t];
-                fetch_jobs(&tuple, &tupdesc, info, with_id,
+                fetch_jobs(&tuple, &tupdesc, info,
                         &(*jobs)[total_tuples - ntuples + t]);
             }
             SPI_freetuptable(tuptable);
@@ -176,10 +177,14 @@ vrp_get_vroom_jobs(
     }
 
     (*total_jobs) = total_tuples;
-    if (with_id) {
-        PGR_DBG("Finish reading %ld orders for matrix", (*total_jobs));
-    } else {
-        PGR_DBG("Finish reading %ld orders for euclidean", (*total_jobs));
-    }
+    PGR_DBG("Finish reading %ld jobs", (*total_jobs));
     time_msg("reading edges", start_t, clock());
+}
+
+void
+vrp_get_vroom_jobs(
+        char *jobs_sql,
+        vrp_vroom_jobs_t **jobs,
+        size_t *total_jobs) {
+    vrp_get_vroom_jobs_general(jobs_sql, jobs, total_jobs);
 }

@@ -46,6 +46,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 // #include "c_common/edges_input.h"
 // #include "c_common/arrays_input.h"
+#include "c_common/vroom/jobs_input.h"
 
 #include "drivers/vroom/vroom_driver.h"
 
@@ -86,10 +87,22 @@ process(
     (*result_tuples) = NULL;
     (*result_count) = 0;
 
-#if 0
     vrp_vroom_jobs_t *jobs = NULL;
     size_t total_jobs = 0;
+    vrp_get_vroom_jobs(jobs_sql, &jobs, &total_jobs);
 
+    PGR_DBG("Total jobs found: %d", total_jobs);
+
+    PGR_DBG("id: %ld", jobs->id);
+    PGR_DBG("location_index: %ld", jobs->location_index);
+    PGR_DBG("service: %ld", jobs->service);
+    PGR_DBG("delivery: %ld", jobs->delivery);
+    PGR_DBG("pickup: %ld", jobs->pickup);
+    PGR_DBG("skills: %ld", jobs->skills);
+    PGR_DBG("priority: %ld", jobs->priority);
+    PGR_DBG("time_windows_sql: %s", jobs->time_windows_sql);
+
+#if 0
     vrp_vroom_shipments_t *shipments = NULL;
     size_t total_shipments = 0;
 
@@ -99,7 +112,6 @@ process(
     pgr_edge_t *matrix_cells = NULL;
     size_t total_cells = 0;
 
-    vrp_get_vroom_jobs(jobs_sql, &jobs, &total_jobs);
     vrp_get_vroom_shipments(shipments_sql, &shipments, &total_shipments);
     vrp_get_vroom_vehicles(vehicles_sql, &vehicles, &total_vehicles);
     vrp_get_vroom_matrix(matrix_sql, &matrix_cells, &total_cells);

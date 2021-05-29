@@ -10,4 +10,9 @@ ADD_LIBRARY(common OBJECT
     arrays_input.c
     time_msg.c
     pgr_alloc.cpp
+
+    vroom/jobs_input.c
+    # vroom/matrix_input.c
+    # vroom/shipments_input.c
+    # vroom/vehicles_input.c
     )

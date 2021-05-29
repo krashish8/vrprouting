@@ -51,18 +51,20 @@ typedef struct {
     int service;
 
     int64_t *delivery;
-    int delivery_size;
+    size_t delivery_size;
 
     int64_t *pickup;
-    int pickup_size;
+    size_t pickup_size;
 
     int *skills;
-    int skills_size;
+    size_t skills_size;
 
     int priority;
 
-    int **time_windows;
-    int time_windows_size;
+    char *time_windows_sql;
+
+    // int **time_windows;
+    // int time_windows_size;
 } vrp_vroom_jobs_t;
 
 #endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_
