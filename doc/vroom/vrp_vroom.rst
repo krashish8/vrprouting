@@ -376,6 +376,10 @@ Column                Type                                   Description
                                                               in seconds
 ====================  ====================================== ================================================
 
+Where:
+
+:ANY-INTEGER: SMALLINT, INTEGER, BIGINT
+
 
 Time Windows SQL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -402,10 +406,6 @@ Column                Type                                   Description
 
   - **Relative values**, e.g. [0, 14400] for a 4 hours time window starting at the beginning of the planning horizon. In that case all times reported in output with the arrival column are relative to the start of the planning horizon.
   - **Absolute values**, "real" timestamps. In that case all times reported in output with the arrival column can be interpreted as timestamps.
-
-Where:
-
-:ANY-INTEGER: SMALLINT, INTEGER, BIGINT
 
 
 Time Matrix SQL
