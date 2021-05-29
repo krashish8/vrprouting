@@ -295,7 +295,7 @@ Column              Type                                   Description
                                                            in seconds.
 
                                                            - The ``time_window`` array shall be of length ``2``.
-                                                           - :code:`time_window[1] ≤ time_window[2]``
+                                                           - :code:`time_window[1] ≤ time_window[2]`
 
 **breaks_sql**      ``TEXT``                               `Breaks SQL`_ query describing the driver breaks.
 
@@ -397,7 +397,7 @@ Column                Type                                   Description
 **Note**:
 
 - All timing are in seconds.
-- Every row must satisfy the condition: :code:`start_time ≤ end_time``.
+- Every row must satisfy the condition: :code:`start_time ≤ end_time`.
 - It is up to users to decide how to describe time windows:
 
   - **Relative values**, e.g. [0, 14400] for a 4 hours time window starting at the beginning of the planning horizon. In that case all times reported in output with the arrival column are relative to the start of the planning horizon.
