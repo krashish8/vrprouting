@@ -118,7 +118,7 @@ Parameter           Type                     Description
                                              travel times between the locations.
 =================== ======================== =================================================
 
-Note:
+**Note**:
 
 - At least one of the jobs or shipments shall be present in the query.
 
@@ -147,48 +147,45 @@ A ``SELECT`` statement that returns the following columns:
 ::
 
     id, location_index
-    [, service, delivery, pickup, skills, priority, time_windows]
+    [, service, delivery, pickup, skills, priority, time_windows_sql]
 
 
-==================  =========================  =========== ================================================
-Column              Type                       Default     Description
-==================  =========================  =========== ================================================
-**id**              ``ANY-INTEGER``                        Non-negative unique identifier of the job.
+====================  =========================  =========== ================================================
+Column                Type                       Default     Description
+====================  =========================  =========== ================================================
+**id**                ``ANY-INTEGER``                        Non-negative unique identifier of the job.
 
-**location_index**  ``ANY-INTEGER``                        Non-negative index of relevant row and column
-                                                           in the custom matrix, denoting job location.
+**location_index**    ``ANY-INTEGER``                        Non-negative index of relevant row and column
+                                                             in the custom matrix, denoting job location.
 
-                                                           - Ranges from ``[0, SIZE[matrix]-1]``
+                                                             - Ranges from ``[0, SIZE[matrix]-1]``
 
-**service**         ``INTEGER``                0           Job service duration, in seconds
+**service**           ``INTEGER``                0           Job service duration, in seconds
 
-**delivery**        ``ARRAY[ANY-INTEGER]``                 Array of non-negative integers describing
-                                                           multidimensional quantities for delivery such
-                                                           as number of items, weight, volume etc.
+**delivery**          ``ARRAY[ANY-INTEGER]``                 Array of non-negative integers describing
+                                                             multidimensional quantities for delivery such
+                                                             as number of items, weight, volume etc.
 
-                                                           - All jobs must have the same value of
-                                                             :code:`array_length(delivery, 1)`
+                                                             - All jobs must have the same value of
+                                                               :code:`array_length(delivery, 1)`
 
-**pickup**          ``ARRAY[ANY-INTEGER]``                 Array of non-negative integers describing
-                                                           multidimensional quantities for pickup such as
-                                                           number of items, weight, volume etc.
+**pickup**            ``ARRAY[ANY-INTEGER]``                 Array of non-negative integers describing
+                                                             multidimensional quantities for pickup such as
+                                                             number of items, weight, volume etc.
 
-                                                           - All jobs must have the same value of
-                                                             :code:`array_length(pickup, 1)`
+                                                             - All jobs must have the same value of
+                                                               :code:`array_length(pickup, 1)`
 
-**skills**          ``ARRAY[INTEGER]``                     Array of non-negative integers defining
-                                                           mandatory skills.
+**skills**            ``ARRAY[INTEGER]``                     Array of non-negative integers defining
+                                                             mandatory skills.
 
-**priority**        ``INTEGER``                0           Priority level of the job
+**priority**          ``INTEGER``                0           Priority level of the job
 
-                                                           - Ranges from ``[0, 100]``
+                                                             - Ranges from ``[0, 100]``
 
-**time_windows**    ``ARRAY[ARRAY[INTEGER]]``              Array of time_windows describing valid slots
-                                                           for job service start. All timings are in seconds
-
-                                                           - The ``time_window`` array shall be of length ``2``.
-                                                           - :code:`time_window[1] ≤ time_window[2]``
-==================  =========================  =========== ================================================
+**time_windows_sql**  ``TEXT``                               `Time Windows SQL`_ query describing valid slots
+                                                             for job service start.
+====================  =========================  =========== ================================================
 
 .. TODO: Fix location_index, changed SMALLINT TO ANY-INTEGER
 
@@ -208,57 +205,50 @@ A ``SELECT`` statement that returns the following columns:
     [, amount, skills, priority]
 
 
-====================  =========================  =========== ================================================
-Column                Type                       Default     Description
-====================  =========================  =========== ================================================
-**p_id**              ``ANY-INTEGER``                         Non-negative unique identifier of the pickup
-                                                              shipment (unique for pickup).
+======================  =========================  =========== ================================================
+Column                  Type                       Default     Description
+======================  =========================  =========== ================================================
+**p_id**                ``ANY-INTEGER``                         Non-negative unique identifier of the pickup
+                                                                shipment (unique for pickup).
 
-**p_location_index**  ``ANY-INTEGER``                         Non-negative index of relevant row and column
-                                                              in the custom matrix, denoting pickup location.
+**p_location_index**    ``ANY-INTEGER``                         Non-negative index of relevant row and column
+                                                                in the custom matrix, denoting pickup location.
 
-                                                              - Ranges from ``[0, SIZE[matrix]-1]``
+                                                                - Ranges from ``[0, SIZE[matrix]-1]``
 
-**p_service**         ``INTEGER``                0            Pickup service duration, in seconds
+**p_service**           ``INTEGER``                0            Pickup service duration, in seconds
 
-**p_time_windows**    ``ARRAY[ARRAY[INTEGER]]``               Array of time_windows describing valid slots
-                                                              for pickup service start. All timings are in seconds
+**p_time_windows_sql**  ``TEXT``                                `Time Windows SQL`_ query describing valid slots
+                                                                for pickup service start.
 
-                                                              - The ``time_window`` array shall be of length ``2``
-                                                              - :code:`time_window[1] ≤ time_window[2]``
+**d_id**                ``ANY-INTEGER``                         Non-negative unique identifier of the delivery
+                                                                shipment (unique for delivery).
 
-**d_id**              ``ANY-INTEGER``                         Non-negative unique identifier of the delivery
-                                                              shipment (unique for delivery).
+**d_location_index**    ``ANY-INTEGER``                         Non-negative index of relevant row and column
+                                                                in the custom matrix, denoting delivery location.
 
-**d_location_index**  ``ANY-INTEGER``                         Non-negative index of relevant row and column
-                                                              in the custom matrix, denoting delivery location.
+                                                                - Ranges from ``[0, SIZE[matrix]-1]``
 
-                                                              - Ranges from ``[0, SIZE[matrix]-1]``
+**d_service**           ``INTEGER``                0            Delivery service duration, in seconds
 
-**d_service**         ``INTEGER``                0            Delivery service duration, in seconds
+**d_time_windows_sql**  ``TEXT``                                `Time Windows SQL`_ query describing valid slots
+                                                                for delivery service start.
 
-**d_time_windows**    ``ARRAY[ARRAY[INTEGER]]``               Array of time_windows describing valid slots
-                                                              for delivery service start. All timings are
-                                                              in seconds.
+**amount**              ``ARRAY[ANY-INTEGER]``                  Array of non-negative integers describing
+                                                                multidimensional quantities such as number
+                                                                of items, weight, volume etc.
 
-                                                              - The ``time_window`` array shall be of length ``2``
-                                                              - :code:`time_window[1] ≤ time_window[2]``
+                                                                - All shipments must have the same value of
+                                                                  :code:`array_length(amount, 1)`
 
-**amount**            ``ARRAY[ANY-INTEGER]``                  Array of non-negative integers describing
-                                                              multidimensional quantities such as number
-                                                              of items, weight, volume etc.
+**skills**              ``ARRAY[INTEGER]``                      Array of non-negative integers defining
+                                                                mandatory skills.
 
-                                                              - All shipments must have the same value of
-                                                                :code:`array_length(amount, 1)`
+**priority**            ``INTEGER``                0            Priority level of the shipment.
 
-**skills**            ``ARRAY[INTEGER]``                      Array of non-negative integers defining
-                                                              mandatory skills.
+                                                                - Ranges from ``[0, 100]``
 
-**priority**          ``INTEGER``                0            Priority level of the shipment.
-
-                                                              - Ranges from ``[0, 100]``
-
-====================  =========================  =========== ================================================
+======================  =========================  =========== ================================================
 
 Where:
 
@@ -301,7 +291,7 @@ Column              Type                                   Description
 **skills**          ``ARRAY[INTEGER]``                     Array of non-negative integers defining
                                                            mandatory skills.
 
-**time_window**     ``ARRAY[INTEGER]``                     Array of time_windows describing working hours,
+**time_window**     ``ARRAY[INTEGER]``                     Time window, describing the working hours,
                                                            in seconds.
 
                                                            - The ``time_window`` array shall be of length ``2``.
@@ -315,7 +305,11 @@ Column              Type                                   Description
                                                            - Makes sense only when the ``plan`` flag is ``true``.
 ==================  ====================================== ================================================
 
-Note:
+.. TODO(ashish): Add speed_factor in vehicle column
+
+.. TODO(ashish): At the end, match this documentation with VROOM API documentation.
+
+**Note**:
 
 - At least one of the start_index or end_index shall be present.
 - If end_index is omitted, the resulting route will stop at the last visited task, whose choice is determined by the optimization process
@@ -340,11 +334,8 @@ Column                Type                       Default     Description
 **id**                ``ANY-INTEGER``                         Non-negative unique identifier of the break
                                                               (unique for the same vehicle).
 
-**time_windows**      ``ARRAY[ARRAY[INTEGER]]``               Array of time_windows describing valid slots
-                                                              for break start. All timings are in seconds.
-
-                                                              - The ``time_window`` array shall be of length ``2``
-                                                              - :code:`time_window[1] ≤ time_window[2]``
+**time_windows_sql**  ``TEXT``                                `Time Windows SQL`_ query describing valid slots
+                                                              for break start.
 
 **service**           ``INTEGER``                0            The break duration, in seconds
 ====================  =========================  =========== ================================================
@@ -384,6 +375,33 @@ Column                Type                                   Description
 **service_before**    ``INTEGER``                             Hard constraint on service time upper bound,
                                                               in seconds
 ====================  ====================================== ================================================
+
+
+Time Windows SQL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A ``SELECT`` statement that returns the following columns:
+
+::
+
+    start_time, end_time
+
+====================  ====================================== ================================================
+Column                Type                                   Description
+====================  ====================================== ================================================
+**start_time**        ``INTEGER``                             Start time of the time window.
+
+**end_time**          ``INTEGER``                             End time of the time window.
+====================  ====================================== ================================================
+
+**Note**:
+
+- All timing are in seconds.
+- Every row must satisfy the condition: :code:`start_time ≤ end_time``.
+- It is up to users to decide how to describe time windows:
+
+  - **Relative values**, e.g. [0, 14400] for a 4 hours time window starting at the beginning of the planning horizon. In that case all times reported in output with the arrival column are relative to the start of the planning horizon.
+  - **Absolute values**, "real" timestamps. In that case all times reported in output with the arrival column can be interpreted as timestamps.
 
 Where:
 
