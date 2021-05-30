@@ -38,6 +38,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #   include <stdint.h>
 #endif
 
+#include "c_types/vroom/vrp_vroom_breaks_t.h"
+#include "c_types/vroom/vrp_vroom_steps_t.h"
+
 /**************************************************************************
  * vroom types
  * ***********************************************************************/
@@ -50,19 +53,19 @@ typedef struct {
     int64_t end_index;
 
     int64_t *capacity;
-    int capacity_size;
+    size_t capacity_size;
 
     int *skills;
-    int skills_size;
+    size_t skills_size;
 
-    int *time_window;
-    int time_window_size;
+    int time_window_start;
+    int time_window_end;
 
-    char *breaks_sql;
-    int breaks_sql_size;
+    vrp_vroom_breaks_t *breaks;
+    size_t breaks_size;
 
-    char *steps_sql;
-    int steps_sql_size;
+    vrp_vroom_steps_t *steps;
+    size_t steps_size;
 } vrp_vroom_vehicles_t;
 
 

@@ -47,6 +47,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 // #include "c_common/edges_input.h"
 // #include "c_common/arrays_input.h"
 #include "c_common/vroom/jobs_input.h"
+#include "c_common/vroom/shipments_input.h"
+#include "c_common/vroom/vehicles_input.h"
 
 #include "drivers/vroom/vroom_driver.h"
 
@@ -108,6 +110,7 @@ process(
     }
 #endif
 
+#if 0
     vrp_vroom_shipments_t *shipments = NULL;
     size_t total_shipments = 0;
     vrp_get_vroom_shipments(shipments_sql, &shipments, &total_shipments);
@@ -131,16 +134,48 @@ process(
     PGR_DBG("amount: %ld", *(shipments->amount));
     PGR_DBG("skills: %ld", *(shipments->skills));
     PGR_DBG("priority: %ld", shipments->priority);
-
-
-
-#if 0
-    vrp_vroom_shipments_t *shipments = NULL;
-    size_t total_shipments = 0;
+#endif
 
     vrp_vroom_vehicles_t *vehicles = NULL;
     size_t total_vehicles = 0;
+    vrp_get_vroom_vehicles(vehicles_sql, &vehicles, &total_vehicles);
 
+    PGR_DBG("Total vehicles found: %d", total_vehicles);
+
+    PGR_DBG("id: %ld", vehicles->id);
+    PGR_DBG("start_index: %ld", vehicles->start_index);
+    PGR_DBG("end_index: %ld", vehicles->end_index);
+    for (int i = 0; i < vehicles->capacity_size; i++) {
+        PGR_DBG("capacity (%ld): %ld", i, *(vehicles->capacity + i));
+    }
+    for (int i = 0; i < vehicles->skills_size; i++) {
+        PGR_DBG("skills (%ld): %ld", i, *(vehicles->skills + i));
+    }
+    PGR_DBG("time_window_start: %ld", vehicles->time_window_start);
+    PGR_DBG("time_window_end: %ld", vehicles->time_window_end);
+
+    PGR_DBG("breaks size: %ld", vehicles->breaks_size);
+    for (int i = 0; i < vehicles->breaks_size; i++) {
+        vrp_vroom_breaks_t *breaks = vehicles->breaks + i;
+        PGR_DBG("breaks (%ld): %ld, %ld", i, breaks->id, breaks->service);
+
+        PGR_DBG("breaks tw size (%ld): %ld", i, breaks->time_windows_size);
+        for (int j = 0; j < breaks->time_windows_size; j++) {
+            vrp_vroom_time_windows_t *tw = breaks->time_windows + j;
+            PGR_DBG("breaks tw (%ld)(%ld): %ld, %ld", i, j, tw->start_time, tw->end_time);
+        }
+    }
+
+    PGR_DBG("steps size: %ld", vehicles->steps_size);
+    for (int i = 0; i < vehicles->steps_size; i++) {
+        vrp_vroom_steps_t *steps = vehicles->steps + i;
+        PGR_DBG("steps (%ld): %ld, %ld, %ld, %ld, %ld", i, steps->id,
+                steps->type, steps->service_at, steps->service_after,
+                steps->service_before);
+    }
+
+
+#if 0
     pgr_edge_t *matrix_cells = NULL;
     size_t total_cells = 0;
 

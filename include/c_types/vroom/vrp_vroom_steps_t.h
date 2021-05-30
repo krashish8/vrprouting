@@ -1,5 +1,5 @@
 /*PGR-GNU*****************************************************************
-File: vehicles_input.h
+File: vrp_vroom_vehicles_t.h
 
 Copyright (c) 2021 pgRouting developers
 Mail: project@pgrouting.org
@@ -25,24 +25,35 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
+/*! @file */
 
-#ifndef INCLUDE_C_COMMON_VROOM_VEHICLES_INPUT_H_
-#define INCLUDE_C_COMMON_VROOM_VEHICLES_INPUT_H_
+#ifndef INCLUDE_C_TYPES_VROOM_VRP_VROOM_STEPS_T_H_
+#define INCLUDE_C_TYPES_VROOM_VRP_VROOM_STEPS_T_H_
 #pragma once
 
-#include <stddef.h>
-#include "c_types/vroom/vrp_vroom_vehicles_t.h"
+/* for int64_t */
+#ifdef __cplusplus
+#   include <cstdint>
+#else
+#   include <stdint.h>
+#endif
 
-/** @brief Reads the VROOM vehicles
- *
- * @param[in] vehicles_sql
- * @param[out] vehicles
- * @param[out] total_vehicles
+
+/**************************************************************************
+ * vroom types
+ * ***********************************************************************/
+/*
+ * vroom steps
  */
-void
-vrp_get_vroom_vehicles(
-        char *vehicles_sql,
-        vrp_vroom_vehicles_t **vehicles,
-        size_t *total_vehicles);
+typedef struct {
+    int64_t id;
 
-#endif  // INCLUDE_C_COMMON_VROOM_VEHICLES_INPUT_H_
+    int type;
+
+    int service_at;
+    int service_after;
+    int service_before;
+} vrp_vroom_steps_t;
+
+
+#endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_STEPS_T_H_
