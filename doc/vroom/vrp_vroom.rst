@@ -416,13 +416,13 @@ A ``SELECT`` statement that returns the following columns:
 
     start_index, end_index, agg_cost
 
-=============== ================= ================================================
+=============== ================= ==================================================
 Column          Type              Description
-=============== ================= ================================================
+=============== ================= ==================================================
 **start_index** ``ANY-INTEGER``   Identifier of the start node.
 **end_index**   ``ANY-INTEGER``   Identifier of the end node.
-**agg_cost**    ``INTEGER``       Time to travel from ``start_vid`` to ``end_vid``
-=============== ================= ================================================
+**agg_cost**    ``INTEGER``       Time to travel from ``start_index`` to ``end_index``
+=============== ================= ==================================================
 
 .. TODO: Add Vehicle Profiles
 
