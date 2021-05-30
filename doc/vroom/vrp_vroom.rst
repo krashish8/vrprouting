@@ -266,46 +266,44 @@ A ``SELECT`` statement that returns the following columns:
     [, service, delivery, pickup, skills, priority, time_window, breaks_sql, steps_sql]
 
 
-==================  ====================================== ================================================
-Column              Type                                   Description
-==================  ====================================== ================================================
-**id**              ``ANY-INTEGER``                        Non-negative unique identifier of the job.
+======================  ================================= ================================================
+Column                  Type                              Description
+======================  ================================= ================================================
+**id**                  ``ANY-INTEGER``                    Non-negative unique identifier of the job.
 
-**start_index**     ``ANY-INTEGER``                        Non-negative index of relevant row and column
+**start_index**         ``ANY-INTEGER``                    Non-negative index of relevant row and column
                                                            in the custom matrix, denoting vehicle start.
 
                                                            - Ranges from ``[0, SIZE[matrix]-1]``
 
-**end_index**       ``ANY-INTEGER``                        Non-negative index of relevant row and column
+**end_index**           ``ANY-INTEGER``                    Non-negative index of relevant row and column
                                                            in the custom matrix, denoting vehicle end.
 
                                                            - Ranges from ``[0, SIZE[matrix]-1]``
 
-**capacity**        ``ARRAY[ANY-INTEGER]``                 Array of non-negative integers describing
+**capacity**            ``ARRAY[ANY-INTEGER]``             Array of non-negative integers describing
                                                            multidimensional quantities such as
                                                            number of items, weight, volume etc.
 
                                                            - All vehicles must have the same value of
                                                              :code:`array_length(capacity, 1)`
 
-**skills**          ``ARRAY[INTEGER]``                     Array of non-negative integers defining
+**skills**              ``ARRAY[INTEGER]``                 Array of non-negative integers defining
                                                            mandatory skills.
 
-**time_window**     ``ARRAY[INTEGER]``                     Time window, describing the working hours,
-                                                           in seconds.
+**time_window_start**   ``INTEGER``                        Time window start time.
 
-                                                           - The ``time_window`` array shall be of length ``2``.
-                                                           - :code:`time_window[1] ≤ time_window[2]`
+**time_window_end**     ``INTEGER``                        Time window end time.
 
-**breaks_sql**      ``TEXT``                               `Breaks SQL`_ query describing the driver breaks.
+**breaks_sql**          ``TEXT``                           `Breaks SQL`_ query describing the driver breaks.
 
-**steps_sql**       ``TEXT``                               `Steps SQL`_ query describing a custom route for
+**steps_sql**           ``TEXT``                           `Steps SQL`_ query describing a custom route for
                                                            the vehicle
 
                                                            - Makes sense only when the ``plan`` flag is ``true``.
-==================  ====================================== ================================================
+======================  ================================= ================================================
 
-.. TODO(ashish): Add speed_factor in vehicle column
+.. TODO(ashish): Add speed_factor and profile in vehicle column
 
 .. TODO(ashish): At the end, match this documentation with VROOM API documentation.
 
@@ -317,6 +315,7 @@ Column              Type                                   Description
 - To request a round trip, specify both start_index and end_index with the same index.
 - A vehicle is only allowed to serve a set of tasks if the resulting load at each route step is lower than the matching value in capacity for each metric. When using multiple components for amounts, it is recommended to put the most important/limiting metrics first.
 - It is assumed that all delivery-related amounts for jobs are loaded at vehicle start, while all pickup-related amounts for jobs are brought back at vehicle end.
+- :code:`time_window_start ≤ time_window_end`
 
 
 Breaks SQL
