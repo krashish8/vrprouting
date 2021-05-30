@@ -46,9 +46,12 @@ void fetch_time_windows(
     time_window->end_time = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
 
     if (time_window->start_time > time_window->end_time) {
-        elog(ERROR, "Time window start time %d must be less than the "
-                     "Time window end time %d",
-                     time_window->start_time, time_window->end_time);
+        ereport(ERROR,
+                (errmsg("Invalid time window (%d, %d)",
+                        time_window->start_time, time_window->end_time),
+                 errhint("Time window start time %d must be "
+                         "less than or equal to time window end time %d",
+                         time_window->start_time, time_window->end_time)));
     }
 }
 
