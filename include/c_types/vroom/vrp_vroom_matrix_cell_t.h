@@ -1,5 +1,5 @@
 /*PGR-GNU*****************************************************************
-File: matrix_input.h
+File: vrp_vroom_matrix_cell_t.h
 
 Copyright (c) 2021 pgRouting developers
 Mail: project@pgrouting.org
@@ -25,24 +25,30 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
+/*! @file */
 
-#ifndef INCLUDE_C_COMMON_VROOM_MATRIX_INPUT_H_
-#define INCLUDE_C_COMMON_VROOM_MATRIX_INPUT_H_
+#ifndef INCLUDE_C_TYPES_VROOM_VRP_VROOM_MATRIX_CELL_T_H_
+#define INCLUDE_C_TYPES_VROOM_VRP_VROOM_MATRIX_CELL_T_H_
 #pragma once
 
-#include <stddef.h>
-#include "c_types/vroom/vrp_vroom_matrix_cell_t.h"
+/* for int64_t */
+#ifdef __cplusplus
+#   include <cstdint>
+#else
+#   include <stdint.h>
+#endif
 
-/** @brief Reads the VROOM matrix
- *
- * @param[in] matrix_sql
- * @param[out] distances
- * @param[out] total_distances
+
+/**************************************************************************
+ * vroom types
+ * ***********************************************************************/
+/*
+ * vroom time matrix cell
  */
-void
-vrp_get_vroom_matrix_cell(
-        char *matrix_sql,
-        vrp_vroom_matrix_cell_t **distances,
-        size_t *total_distances);
+typedef struct {
+    int64_t start_index;
+    int64_t end_index;
+    int agg_cost;
+} vrp_vroom_matrix_cell_t;
 
-#endif  // INCLUDE_C_COMMON_VROOM_MATRIX_INPUT_H_
+#endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_MATRIX_CELL_T_H_

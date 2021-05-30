@@ -49,6 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/vroom/jobs_input.h"
 #include "c_common/vroom/shipments_input.h"
 #include "c_common/vroom/vehicles_input.h"
+#include "c_common/vroom/matrix_input.h"
 
 #include "drivers/vroom/vroom_driver.h"
 
@@ -136,6 +137,7 @@ process(
     PGR_DBG("priority: %ld", shipments->priority);
 #endif
 
+#if 0
     vrp_vroom_vehicles_t *vehicles = NULL;
     size_t total_vehicles = 0;
     vrp_get_vroom_vehicles(vehicles_sql, &vehicles, &total_vehicles);
@@ -173,11 +175,21 @@ process(
                 steps->type, steps->service_at, steps->service_after,
                 steps->service_before);
     }
+#endif
+
+    vrp_vroom_matrix_cell_t *distances = NULL;
+    size_t total_distances = 0;
+    vrp_get_vroom_matrix_cell(matrix_sql, &distances, &total_distances);
+    PGR_DBG("total distances: %ld", total_distances);
+    for (int i = 0; i < total_distances; i++) {
+        PGR_DBG("distance from %ld to %ld: %ld", (distances + i)->start_index,
+            (distances + i)->end_index, (distances + i)->agg_cost);
+    }
+
+
 
 
 #if 0
-    pgr_edge_t *matrix_cells = NULL;
-    size_t total_cells = 0;
 
     vrp_get_vroom_shipments(shipments_sql, &shipments, &total_shipments);
     vrp_get_vroom_vehicles(vehicles_sql, &vehicles, &total_vehicles);

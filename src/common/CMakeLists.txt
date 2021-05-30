@@ -17,5 +17,5 @@ ADD_LIBRARY(common OBJECT
     vroom/breaks_input.c
     vroom/steps_input.c
     vroom/vehicles_input.c
-    # vroom/matrix_input.c
+    vroom/matrix_input.c
     )

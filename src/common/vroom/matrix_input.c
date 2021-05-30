@@ -26,12 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
 
-#include "c_common/matrixRows_input.h"
-
-/* for bool */
-#   include <stdbool.h>
-/* for size_t */
-#   include <stddef.h>
+#include "c_common/vroom/matrix_input.h"
 
 #include "c_types/column_info_t.h"
 
@@ -40,87 +35,90 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/time_msg.h"
 
 
+
 static
-void pgr_fetch_row(
+void fetch_matrix_cell(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[3],
-        Matrix_cell_t *distance) {
-    distance->from_vid = pgr_SPI_getBigInt(tuple, tupdesc,  info[0]);
-    distance->to_vid = pgr_SPI_getBigInt(tuple, tupdesc,  info[1]);
-    distance->cost = pgr_SPI_getFloat8(tuple, tupdesc, info[2]);
+        Column_info_t *info,
+        vrp_vroom_matrix_cell_t *distance) {
+    distance->start_index = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
+    distance->end_index = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
+    distance->agg_cost = pgr_SPI_getBigInt(tuple, tupdesc, info[2]);
 }
 
-/*!
- * bigint start_vid,
- * bigint end_vid,
- * float agg_cost,
- */
-void pgr_get_matrixRows(
-        char *sql,
-        Matrix_cell_t **rows,
-        size_t *total_rows) {
+
+static
+void
+vrp_get_vroom_matrix_cell_general(
+        char *matrix_sql,
+        vrp_vroom_matrix_cell_t **distances,
+        size_t *total_distances) {
     clock_t start_t = clock();
 
     const int tuple_limit = 1000000;
 
-    size_t total_tuples = 0;
+    PGR_DBG("vrp_get_vroom_matrix data");
+    PGR_DBG("%s", matrix_sql);
 
-    Column_info_t info[3];
+    const int column_count = 3;
+    Column_info_t info[column_count];
 
     int i;
-    for (i = 0; i < 3; ++i) {
+    for (i = 0; i < column_count; ++i) {
         info[i].colNumber = -1;
         info[i].type = 0;
         info[i].strict = true;
         info[i].eType = ANY_INTEGER;
     }
-    info[0].name = "start_vid";
-    info[1].name = "end_vid";
+
+    info[0].name = "start_index";
+    info[1].name = "end_index";
     info[2].name = "agg_cost";
 
-    info[2].eType = ANY_NUMERICAL;
+    // info[3].eType = INTEGER;
 
+    size_t total_tuples;
 
     void *SPIplan;
-    SPIplan = pgr_SPI_prepare(sql);
-
+    SPIplan = pgr_SPI_prepare(matrix_sql);
     Portal SPIportal;
     SPIportal = pgr_SPI_cursor_open(SPIplan);
 
-
     bool moredata = true;
-    (*total_rows) = total_tuples;
+    (*total_distances) = total_tuples = 0;
+
+    /* on the first tuple get the column numbers */
 
     while (moredata == true) {
         SPI_cursor_fetch(SPIportal, true, tuple_limit);
-        if (total_tuples == 0)
-            pgr_fetch_column_info(info, 3);
-
+        if (total_tuples == 0) {
+            pgr_fetch_column_info(info, column_count);
+        }
         size_t ntuples = SPI_processed;
         total_tuples += ntuples;
-
+        PGR_DBG("SPI_processed %ld", ntuples);
         if (ntuples > 0) {
-            if ((*rows) == NULL)
-                (*rows) = (Matrix_cell_t *)palloc0(
-                        total_tuples * sizeof(Matrix_cell_t));
+            if ((*distances) == NULL)
+                (*distances) = (vrp_vroom_matrix_cell_t *)palloc0(
+                        total_tuples * sizeof(vrp_vroom_matrix_cell_t));
             else
-                (*rows) = (Matrix_cell_t *)repalloc(
-                        (*rows), total_tuples * sizeof(Matrix_cell_t));
+                (*distances) = (vrp_vroom_matrix_cell_t *)repalloc(
+                        (*distances),
+                        total_tuples * sizeof(vrp_vroom_matrix_cell_t));
 
-            if ((*rows) == NULL) {
+            if ((*distances) == NULL) {
                 elog(ERROR, "Out of memory");
             }
 
+            size_t t;
             SPITupleTable *tuptable = SPI_tuptable;
             TupleDesc tupdesc = SPI_tuptable->tupdesc;
-            PGR_DBG("processing %ld matrix cell tupĺes", ntuples);
-
-            size_t t;
+            PGR_DBG("processing %ld", ntuples);
             for (t = 0; t < ntuples; t++) {
                 HeapTuple tuple = tuptable->vals[t];
-                pgr_fetch_row(&tuple, &tupdesc, info,
-                        &(*rows)[total_tuples - ntuples + t]);
+                fetch_matrix_cell(&tuple, &tupdesc, info,
+                        &(*distances)[total_tuples - ntuples + t]);
             }
             SPI_freetuptable(tuptable);
         } else {
@@ -130,13 +128,21 @@ void pgr_get_matrixRows(
 
     SPI_cursor_close(SPIportal);
 
-
     if (total_tuples == 0) {
-        (*total_rows) = 0;
-        PGR_DBG("NO rows");
+        (*total_distances) = 0;
+        PGR_DBG("NO distance");
         return;
     }
 
-    (*total_rows) = total_tuples;
-    time_msg(" reading matrix cells", start_t, clock());
+    (*total_distances) = total_tuples;
+    PGR_DBG("Finish reading %ld distances", (*total_distances));
+    time_msg("reading distances", start_t, clock());
+}
+
+void
+vrp_get_vroom_matrix_cell(
+        char *matrix_sql,
+        vrp_vroom_matrix_cell_t **distances,
+        size_t *total_distances) {
+    vrp_get_vroom_matrix_cell_general(matrix_sql, distances, total_distances);
 }
