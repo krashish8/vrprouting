@@ -44,6 +44,12 @@ void fetch_time_windows(
         vrp_vroom_time_windows_t *time_window) {
     time_window->start_time = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
     time_window->end_time = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
+
+    if (time_window->start_time > time_window->end_time) {
+        elog(ERROR, "Time window start time %d must be less than the "
+                     "Time window end time %d",
+                     time_window->start_time, time_window->end_time);
+    }
 }
 
 

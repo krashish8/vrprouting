@@ -26,7 +26,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
 
-#include "c_common/orders_input.h"
+#include "c_common/vroom/shipments_input.h"
+#include "c_common/vroom/time_windows_input.h"
 
 #include "c_types/column_info_t.h"
 
@@ -35,143 +36,152 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #include "c_common/time_msg.h"
 
 
+// TODO(ashish): At the end, check and remove all unnecessary includes
 
 static
-void fetch_pd_orders(
+void fetch_shipments(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[14],
-        bool matrix_version,
-        PickDeliveryOrders_t *pd_order) {
-    pd_order->id = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
-    pd_order->demand = pgr_SPI_getFloat8(tuple, tupdesc, info[1]);
+        Column_info_t info[8],
+        vrp_vroom_shipments_t *shipment) {
+    // TODO(ashish): Change BigInt to Int, wherever required.
+    // TODO(ashish): Check for null in optional columns
 
     /*
-     * the pickups
+     * The pickups
      */
-    pd_order->pick_x = matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[2]);
-    pd_order->pick_y =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[3]);
-    pd_order->pick_open_t = pgr_SPI_getFloat8(tuple, tupdesc, info[4]);
-    pd_order->pick_close_t = pgr_SPI_getFloat8(tuple, tupdesc, info[5]);
-    pd_order->pick_service_t = column_found(info[6].colNumber) ?
-        pgr_SPI_getFloat8(tuple, tupdesc, info[6]) : 0;
+    shipment->p_id = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
+    shipment->p_location_index = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
+    shipment->p_service = column_found(info[2].colNumber) ?
+        pgr_SPI_getBigInt(tuple, tupdesc, info[2]) : 0;
+    shipment->p_time_windows_size = 0;
+    if (column_found(info[3].colNumber)) {
+        char *p_time_windows_sql = pgr_SPI_getText(tuple, tupdesc, info[3]);
+        PGR_DBG("p_time_windows_sql: %s", p_time_windows_sql);
+        vrp_get_vroom_time_windows(p_time_windows_sql,
+            &shipment->p_time_windows, &shipment->p_time_windows_size);
+    }
 
     /*
-     * the deliveries
+     * The deliveries
      */
-    pd_order->deliver_x =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[7]);
-    pd_order->deliver_y =  matrix_version ?
-        0 : pgr_SPI_getFloat8(tuple, tupdesc, info[8]);
-    pd_order->deliver_open_t = pgr_SPI_getFloat8(tuple, tupdesc, info[9]);
-    pd_order->deliver_close_t = pgr_SPI_getFloat8(tuple, tupdesc, info[10]);
-    pd_order->deliver_service_t = column_found(info[11].colNumber) ?
-        pgr_SPI_getFloat8(tuple, tupdesc, info[11]) : 0;
+    shipment->d_id = pgr_SPI_getBigInt(tuple, tupdesc, info[4]);
+    shipment->d_location_index = pgr_SPI_getBigInt(tuple, tupdesc, info[5]);
+    shipment->d_service = column_found(info[6].colNumber) ?
+        pgr_SPI_getBigInt(tuple, tupdesc, info[6]) : 0;
+    shipment->d_time_windows_size = 0;
+    if (column_found(info[7].colNumber)) {
+        char *d_time_windows_sql = pgr_SPI_getText(tuple, tupdesc, info[7]);
+        PGR_DBG("d_time_windows_sql: %s", d_time_windows_sql);
+        vrp_get_vroom_time_windows(d_time_windows_sql,
+            &shipment->d_time_windows, &shipment->d_time_windows_size);
+    }
 
-    pd_order->pick_node_id = matrix_version ?
-        pgr_SPI_getBigInt(tuple, tupdesc, info[12]) : 0;
-    pd_order->deliver_node_id = matrix_version ?
-        pgr_SPI_getBigInt(tuple, tupdesc, info[13]) : 0;
+    shipment->amount_size = 0;
+    shipment->amount = column_found(info[8].colNumber) ?
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[8], &shipment->amount_size)
+        : NULL;
+
+    shipment->skills_size = 0;
+    shipment->skills = column_found(info[9].colNumber) ?
+        pgr_SPI_getBigIntArr(tuple, tupdesc, info[9], &shipment->skills_size)
+        : NULL;
+
+    shipment->priority = column_found(info[10].colNumber) ?
+        pgr_SPI_getBigInt(tuple, tupdesc, info[10]) : 0;
 }
-
 
 
 static
 void
-pgr_get_pd_orders_general(
-        char *pd_orders_sql,
-        PickDeliveryOrders_t **pd_orders,
-        size_t *total_pd_orders,
-        bool with_id) {
+vrp_get_vroom_shipments_general(
+        char *shipments_sql,
+        vrp_vroom_shipments_t **shipments,
+        size_t *total_shipments) {
     clock_t start_t = clock();
 
     const int tuple_limit = 1000000;
 
-    PGR_DBG("pgr_get_pd_orders_data");
-    PGR_DBG("%s", pd_orders_sql);
+    PGR_DBG("vrp_get_vroom_shipments data");
+    PGR_DBG("%s", shipments_sql);
 
-    Column_info_t info[14];
+    Column_info_t info[11];
 
     int i;
-    for (i = 0; i < 14; ++i) {
+    for (i = 0; i < 11; ++i) {
         info[i].colNumber = -1;
         info[i].type = 0;
-        info[i].strict = true;
-        info[i].eType = ANY_NUMERICAL;
+        info[i].strict = false;
+        info[i].eType = ANY_INTEGER;
     }
 
+    /* pickup shipments */
+    info[0].name = "p_id";
+    info[1].name = "p_location_index";
+    info[2].name = "p_service";
+    info[3].name = "p_time_windows_sql";
 
-    info[0].name = "id";
-    info[1].name = "demand";
-    info[2].name = "p_x";
-    info[3].name = "p_y";
-    info[4].name = "p_open";
-    info[5].name = "p_close";
-    info[6].name = "p_service";
-    info[7].name = "d_x";
-    info[8].name = "d_y";
-    info[9].name = "d_open";
-    info[10].name = "d_close";
-    info[11].name = "d_service";
-    info[12].name = "p_node_id";
-    info[13].name = "d_node_id";
+    /* delivery shipments */
+    info[4].name = "d_id";
+    info[5].name = "d_location_index";
+    info[6].name = "d_service";
+    info[7].name = "d_time_windows_sql";
 
-    info[0].eType = ANY_INTEGER;
-    info[12].eType = ANY_INTEGER;
-    info[13].eType = ANY_INTEGER;
+    info[8].name = "amount";
+    info[9].name = "skills";
+    info[10].name = "priority";
 
-    /* service is optional*/
-    info[6].strict = false;
-    info[11].strict = false;
-    /* nodes are going to be ignored*/
-    info[12].strict = false;
-    info[13].strict = false;
+    // TODO(ashish): Check for ANY_INTEGER, INTEGER, etc types in info[x].name.
+    //               Better change INTEGER to ANY_INTEGER
 
-    if (with_id) {
-        /* (x,y) values are ignored*/
-        info[2].strict = false;
-        info[3].strict = false;
-        info[7].strict = false;
-        info[8].strict = false;
-        /* nodes are compulsory*/
-        info[12].strict = true;
-        info[13].strict = true;
-    }
+    // info[2].eType = INTEGER;
+    info[3].eType = TEXT;
+
+    // info[6].eType = INTEGER;
+    info[7].eType = TEXT;
+    info[8].eType = ANY_INTEGER_ARRAY;
+
+    // info[9].eType = INTEGER_ARRAY;
+    info[9].eType = ANY_INTEGER_ARRAY;
+    // info[10].eType = INTEGER;
 
 
+    /* id and location_index of pickup and delivery are mandatory */
+    info[0].strict = true;
+    info[1].strict = true;
+    info[4].strict = true;
+    info[5].strict = true;
 
     size_t total_tuples;
 
     void *SPIplan;
-    SPIplan = pgr_SPI_prepare(pd_orders_sql);
+    SPIplan = pgr_SPI_prepare(shipments_sql);
     Portal SPIportal;
     SPIportal = pgr_SPI_cursor_open(SPIplan);
 
     bool moredata = true;
-    (*total_pd_orders) = total_tuples = 0;
+    (*total_shipments) = total_tuples = 0;
 
     /* on the first tuple get the column numbers */
 
     while (moredata == true) {
         SPI_cursor_fetch(SPIportal, true, tuple_limit);
         if (total_tuples == 0) {
-            pgr_fetch_column_info(info, 14);
+            pgr_fetch_column_info(info, 11);
         }
         size_t ntuples = SPI_processed;
         total_tuples += ntuples;
         PGR_DBG("SPI_processed %ld", ntuples);
         if (ntuples > 0) {
-            if ((*pd_orders) == NULL)
-                (*pd_orders) = (PickDeliveryOrders_t *)palloc0(
-                        total_tuples * sizeof(PickDeliveryOrders_t));
+            if ((*shipments) == NULL)
+                (*shipments) = (vrp_vroom_shipments_t *)palloc0(
+                        total_tuples * sizeof(vrp_vroom_shipments_t));
             else
-                (*pd_orders) = (PickDeliveryOrders_t *)repalloc(
-                        (*pd_orders),
-                        total_tuples * sizeof(PickDeliveryOrders_t));
+                (*shipments) = (vrp_vroom_shipments_t *)repalloc(
+                        (*shipments),
+                        total_tuples * sizeof(vrp_vroom_shipments_t));
 
-            if ((*pd_orders) == NULL) {
+            if ((*shipments) == NULL) {
                 elog(ERROR, "Out of memory");
             }
 
@@ -181,8 +191,8 @@ pgr_get_pd_orders_general(
             PGR_DBG("processing %ld", ntuples);
             for (t = 0; t < ntuples; t++) {
                 HeapTuple tuple = tuptable->vals[t];
-                fetch_pd_orders(&tuple, &tupdesc, info, with_id,
-                        &(*pd_orders)[total_tuples - ntuples + t]);
+                fetch_shipments(&tuple, &tupdesc, info,
+                        &(*shipments)[total_tuples - ntuples + t]);
             }
             SPI_freetuptable(tuptable);
         } else {
@@ -193,32 +203,20 @@ pgr_get_pd_orders_general(
     SPI_cursor_close(SPIportal);
 
     if (total_tuples == 0) {
-        (*total_pd_orders) = 0;
-        PGR_DBG("NO orders");
+        (*total_shipments) = 0;
+        PGR_DBG("NO shipments");
         return;
     }
 
-    (*total_pd_orders) = total_tuples;
-    if (with_id) {
-        PGR_DBG("Finish reading %ld orders for matrix", (*total_pd_orders));
-    } else {
-        PGR_DBG("Finish reading %ld orders for euclidean", (*total_pd_orders));
-    }
+    (*total_shipments) = total_tuples;
+    PGR_DBG("Finish reading %ld shipments", (*total_shipments));
     time_msg("reading edges", start_t, clock());
 }
 
 void
-pgr_get_pd_orders(
-        char *pd_orders_sql,
-        PickDeliveryOrders_t **pd_orders,
-        size_t *total_pd_orders) {
-    pgr_get_pd_orders_general(pd_orders_sql, pd_orders, total_pd_orders, false);
-}
-
-void
-get_pd_orders_with_id(
-        char *pd_orders_sql,
-        PickDeliveryOrders_t **pd_orders,
-        size_t *total_pd_orders) {
-    pgr_get_pd_orders_general(pd_orders_sql, pd_orders, total_pd_orders, true);
+vrp_get_vroom_shipments(
+        char *shipments_sql,
+        vrp_vroom_shipments_t **shipments,
+        size_t *total_shipments) {
+    vrp_get_vroom_shipments_general(shipments_sql, shipments, total_shipments);
 }

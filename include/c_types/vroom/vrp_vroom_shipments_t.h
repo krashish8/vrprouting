@@ -38,6 +38,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #   include <stdint.h>
 #endif
 
+#include "c_types/vroom/vrp_vroom_time_windows_t.h"
+
 /**************************************************************************
  * vroom types
  * ***********************************************************************/
@@ -45,16 +47,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * vroom shipments
  */
 typedef struct {
+    /* pickup shipment */
     int64_t p_id;
     int64_t p_location_index;
     int p_service;
-    int **p_time_windows;
+    vrp_vroom_time_windows_t *p_time_windows;
     int p_time_windows_size;
 
+    /* delivery shipment */
     int64_t d_id;
     int64_t d_location_index;
     int d_service;
-    int **d_time_windows;
+    vrp_vroom_time_windows_t *d_time_windows;
     int d_time_windows_size;
 
     int64_t *amount;

@@ -26,35 +26,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
  ********************************************************************PGR-GNU*/
 
-#ifndef INCLUDE_C_COMMON_ORDERS_INPUT_H_
-#define INCLUDE_C_COMMON_ORDERS_INPUT_H_
+#ifndef INCLUDE_C_COMMON_VROOM_SHIPMENTS_INPUT_H_
+#define INCLUDE_C_COMMON_VROOM_SHIPMENTS_INPUT_H_
 #pragma once
 
 #include <stddef.h>
-#include "c_types/pickDeliver/pickDeliveryOrders_t.h"
+#include "c_types/vroom/vrp_vroom_shipments_t.h"
 
-/** @brief Reads the pick-Deliver orders
+/** @brief Reads the VROOM shipments
  *
- * @param[in] pd_orders_sql
- * @param[out] pd_orders
- * @param[out] total_pd_orders
+ * @param[in] shipments_sql
+ * @param[out] shipments
+ * @param[out] total_shipments
  */
 void
-pgr_get_pd_orders(
-        char *pd_orders_sql,
-        PickDeliveryOrders_t **pd_orders,
-        size_t *total_pd_orders);
+vrp_get_vroom_shipments(
+        char *shipments_sql,
+        vrp_vroom_shipments_t **shipments,
+        size_t *total_shipments);
 
-/** @brief Reads the pick-Deliver orders
- *
- * @param[in] pd_orders_sql
- * @param[out] pd_orders
- * @param[out] total_pd_orders
- */
-void
-get_pd_orders_with_id(
-        char *pd_orders_sql,
-        PickDeliveryOrders_t **pd_orders,
-        size_t *total_pd_orders);
-
-#endif  // INCLUDE_C_COMMON_ORDERS_INPUT_H_
+#endif  // INCLUDE_C_COMMON_VROOM_SHIPMENTS_INPUT_H_

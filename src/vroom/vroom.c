@@ -91,6 +91,7 @@ process(
     size_t total_jobs = 0;
     vrp_get_vroom_jobs(jobs_sql, &jobs, &total_jobs);
 
+#if 0
     PGR_DBG("Total jobs found: %d", total_jobs);
 
     PGR_DBG("id: %ld", jobs->id);
@@ -105,6 +106,33 @@ process(
         PGR_DBG("(%d) time_windows start: %ld", i, (*(jobs->time_windows + i)).start_time);
         PGR_DBG("(%d) time_windows end: %ld", i, (*(jobs->time_windows + i)).end_time);
     }
+#endif
+
+    vrp_vroom_shipments_t *shipments = NULL;
+    size_t total_shipments = 0;
+    vrp_get_vroom_shipments(shipments_sql, &shipments, &total_shipments);
+
+    PGR_DBG("Total shipments found: %d", total_shipments);
+
+    PGR_DBG("p_id: %ld", shipments->p_id);
+    PGR_DBG("p_location_index: %ld", shipments->p_location_index);
+    PGR_DBG("p_service: %ld", shipments->p_service);
+    for(int i = 0; i < shipments->p_time_windows_size; i++) {
+        PGR_DBG("(%d) p_time_windows start: %ld", i, (*(shipments->p_time_windows + i)).start_time);
+        PGR_DBG("(%d) p_time_windows end: %ld", i, (*(shipments->p_time_windows + i)).end_time);
+    }
+    PGR_DBG("d_id: %ld", shipments->d_id);
+    PGR_DBG("d_location_index: %ld", shipments->d_location_index);
+    PGR_DBG("d_service: %ld", shipments->d_service);
+    for(int i = 0; i < shipments->d_time_windows_size; i++) {
+        PGR_DBG("(%d) d_time_windows start: %ld", i, (*(shipments->d_time_windows + i)).start_time);
+        PGR_DBG("(%d) d_time_windows end: %ld", i, (*(shipments->d_time_windows + i)).end_time);
+    }
+    PGR_DBG("amount: %ld", *(shipments->amount));
+    PGR_DBG("skills: %ld", *(shipments->skills));
+    PGR_DBG("priority: %ld", shipments->priority);
+
+
 
 #if 0
     vrp_vroom_shipments_t *shipments = NULL;

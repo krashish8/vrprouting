@@ -63,9 +63,6 @@ typedef struct {
 
     int priority;
 
-    // TODO(ashish): Delete this.
-    // char *time_windows_sql;
-
     vrp_vroom_time_windows_t *time_windows;
     int time_windows_size;
 } vrp_vroom_jobs_t;
