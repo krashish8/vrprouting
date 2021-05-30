@@ -40,7 +40,7 @@ static
 void fetch_time_windows(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[2],
+        Column_info_t *info,
         vrp_vroom_time_windows_t *time_window) {
     time_window->start_time = pgr_SPI_getBigInt(tuple, tupdesc, info[0]);
     time_window->end_time = pgr_SPI_getBigInt(tuple, tupdesc, info[1]);
@@ -132,13 +132,13 @@ vrp_get_vroom_time_windows_general(
 
     if (total_tuples == 0) {
         (*total_time_windows) = 0;
-        PGR_DBG("NO orders");
+        PGR_DBG("NO time windows");
         return;
     }
 
     (*total_time_windows) = total_tuples;
     PGR_DBG("Finish reading %ld time_windows", (*total_time_windows));
-    time_msg("reading edges", start_t, clock());
+    time_msg("reading time windows", start_t, clock());
 }
 
 void

@@ -42,7 +42,7 @@ static
 void fetch_shipments(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[8],
+        Column_info_t *info,
         vrp_vroom_shipments_t *shipment) {
     // TODO(ashish): Change BigInt to Int, wherever required.
     // TODO(ashish): Check for null in optional columns
@@ -168,7 +168,7 @@ vrp_get_vroom_shipments_general(
     while (moredata == true) {
         SPI_cursor_fetch(SPIportal, true, tuple_limit);
         if (total_tuples == 0) {
-            pgr_fetch_column_info(info, column_coun);
+            pgr_fetch_column_info(info, column_count);
         }
         size_t ntuples = SPI_processed;
         total_tuples += ntuples;
@@ -211,7 +211,7 @@ vrp_get_vroom_shipments_general(
 
     (*total_shipments) = total_tuples;
     PGR_DBG("Finish reading %ld shipments", (*total_shipments));
-    time_msg("reading edges", start_t, clock());
+    time_msg("reading shipments", start_t, clock());
 }
 
 void

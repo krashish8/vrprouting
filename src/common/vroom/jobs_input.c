@@ -42,7 +42,7 @@ static
 void fetch_jobs(
         HeapTuple *tuple,
         TupleDesc *tupdesc,
-        Column_info_t info[8],
+        Column_info_t *info,
         vrp_vroom_jobs_t *job) {
     // TODO(ashish): Change BigInt to Int, wherever required.
     // TODO(ashish): Check for null in optional columns
@@ -192,7 +192,7 @@ vrp_get_vroom_jobs_general(
 
     (*total_jobs) = total_tuples;
     PGR_DBG("Finish reading %ld jobs", (*total_jobs));
-    time_msg("reading edges", start_t, clock());
+    time_msg("reading jobs", start_t, clock());
 }
 
 void
