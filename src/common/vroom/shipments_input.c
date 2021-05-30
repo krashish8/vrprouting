@@ -105,10 +105,11 @@ vrp_get_vroom_shipments_general(
     PGR_DBG("vrp_get_vroom_shipments data");
     PGR_DBG("%s", shipments_sql);
 
-    Column_info_t info[11];
+    const int column_count = 11;
+    Column_info_t info[column_count];
 
     int i;
-    for (i = 0; i < 11; ++i) {
+    for (i = 0; i < column_count; ++i) {
         info[i].colNumber = -1;
         info[i].type = 0;
         info[i].strict = false;
@@ -167,7 +168,7 @@ vrp_get_vroom_shipments_general(
     while (moredata == true) {
         SPI_cursor_fetch(SPIportal, true, tuple_limit);
         if (total_tuples == 0) {
-            pgr_fetch_column_info(info, 11);
+            pgr_fetch_column_info(info, column_coun);
         }
         size_t ntuples = SPI_processed;
         total_tuples += ntuples;

@@ -64,7 +64,7 @@ typedef struct {
     int priority;
 
     vrp_vroom_time_windows_t *time_windows;
-    int time_windows_size;
+    size_t time_windows_size;
 } vrp_vroom_jobs_t;
 
 #endif  // INCLUDE_C_TYPES_VROOM_VRP_VROOM_JOBS_T_H_

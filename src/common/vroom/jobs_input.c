@@ -97,10 +97,11 @@ vrp_get_vroom_jobs_general(
     PGR_DBG("vrp_get_vroom_jobs data");
     PGR_DBG("%s", jobs_sql);
 
-    Column_info_t info[8];
+    const int column_count = 8;
+    Column_info_t info[column_count];
 
     int i;
-    for (i = 0; i < 8; ++i) {
+    for (i = 0; i < column_count; ++i) {
         info[i].colNumber = -1;
         info[i].type = 0;
         info[i].strict = false;
@@ -148,7 +149,7 @@ vrp_get_vroom_jobs_general(
     while (moredata == true) {
         SPI_cursor_fetch(SPIportal, true, tuple_limit);
         if (total_tuples == 0) {
-            pgr_fetch_column_info(info, 8);
+            pgr_fetch_column_info(info, column_count);
         }
         size_t ntuples = SPI_processed;
         total_tuples += ntuples;

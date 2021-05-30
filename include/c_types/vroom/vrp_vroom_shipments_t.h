@@ -52,14 +52,14 @@ typedef struct {
     int64_t p_location_index;
     int p_service;
     vrp_vroom_time_windows_t *p_time_windows;
-    int p_time_windows_size;
+    size_t p_time_windows_size;
 
     /* delivery shipment */
     int64_t d_id;
     int64_t d_location_index;
     int d_service;
     vrp_vroom_time_windows_t *d_time_windows;
-    int d_time_windows_size;
+    size_t d_time_windows_size;
 
     int64_t *amount;
     int amount_size;
