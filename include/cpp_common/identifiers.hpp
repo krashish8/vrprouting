@@ -252,7 +252,6 @@ class Identifiers {
             os << "}";
             return os;
         }
-
 };
 
 #endif  // INCLUDE_CPP_COMMON_IDENTIFIERS_HPP_
