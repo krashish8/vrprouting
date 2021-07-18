@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS public.edge_table;
 DROP TABLE IF EXISTS public.edge_table_vertices_pgr;
 DROP TABLE IF EXISTS public.vehicles_1;
 DROP TABLE IF EXISTS public.orders_1;
+DROP TABLE IF EXISTS public.edges_matrix;
 
 --EDGE TABLE CREATE start
 CREATE TABLE public.edge_table (
