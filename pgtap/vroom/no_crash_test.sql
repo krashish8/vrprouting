@@ -1,7 +1,7 @@
 BEGIN;
 
 -- SELECT CASE WHEN min_version('0.2.0') THEN plan (59) ELSE plan(1) END;
-select plan(14);
+select plan(30);
 
 PREPARE jobs AS
 SELECT * FROM vroom_jobs;
@@ -20,11 +20,7 @@ RETURNS SETOF TEXT AS
 $BODY$
 DECLARE
 params TEXT[];
-params_new TEXT[];
 subs TEXT[];
-jobs_params TEXT[];
-jobs_new TEXT;
-separator TEXT;
 BEGIN
   -- IF NOT min_version('0.2.0') THEN
   --   RETURN QUERY
@@ -42,10 +38,10 @@ BEGIN
   SELECT isnt_empty('matrix', 'Should be not empty to tests be meaningful');
 
   params = ARRAY[
-    '$$SELECT * FROM vroom_jobs$$',
-    '$$SELECT * FROM vroom_shipments$$',
-    '$$SELECT * FROM vroom_vehicles$$',
-    '$$SELECT * FROM vroom_matrix$$'
+    '$$jobs$$',
+    '$$shipments$$',
+    '$$vehicles$$',
+    '$$matrix$$'
   ]::TEXT[];
   subs = ARRAY[
     'NULL',
@@ -54,37 +50,27 @@ BEGIN
     'NULL'
   ]::TEXT[];
 
-  jobs_params := ARRAY[
-    'id',
-    'location_index',
-    'service',
-    'delivery',
-    'pickup',
-    'skills',
-    'priority',
-    'time_windows_sql'
-  ]::TEXT[];
-
   RETURN query SELECT * FROM no_crash_test('vrp_vroom', params, subs);
 
-  -- FOR i IN 8..array_length(jobs_params, 1) LOOP
-  --   jobs_new := '$$SELECT';
-  --   separator := ' ';
-  --   FOR j in 1..array_length(jobs_params, 1) LOOP
-  --     IF i = j THEN
-  --       jobs_new := jobs_new || separator || 'NULL AS ' || jobs_params[j];
-  --     ELSE
-  --       jobs_new := jobs_new || separator || jobs_params[j];
-  --     END IF;
-  --     separator := ', ';
-  --   END LOOP;
-  --   jobs_new := jobs_new || ' FROM vroom_jobs$$';
-  --   params_new := params;
-  --   params_new[1] := jobs_new;
-  --   RETURN query SELECT * FROM no_crash_test('vrp_vroom', params_new, subs);
-  --   -- RAISE WARNING '%', jobs_new;
-  -- END LOOP;
+  params = ARRAY[
+    '$$jobs$$',
+    '$$vehicles$$',
+    '$$matrix$$'
+  ]::TEXT[];
+  subs = ARRAY[
+    'NULL',
+    'NULL',
+    'NULL'
+  ]::TEXT[];
 
+  RETURN query SELECT * FROM no_crash_test('vrp_vroomJobs', params, subs);
+
+  params = ARRAY[
+    '$$shipments$$',
+    '$$vehicles$$',
+    '$$matrix$$'
+  ]::TEXT[];
+  RETURN query SELECT * FROM no_crash_test('vrp_vroomShipments', params, subs);
 
 END
 $BODY$
