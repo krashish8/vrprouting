@@ -51,11 +51,18 @@ jobs:
         run: |
           curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.zip --output v1.10.0.zip
           Expand-Archive 'v1.10.0.zip' -Force
+          
+          curl -L https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip/download --output asio.zip
+          Expand-Archive 'asio.zip' -Force
+          
+          curl -L http://downloads.sourceforge.net/gnuwin32/openssl-0.9.8h-1-lib.zip --output openssl.zip
+          Expand-Archive 'openssl.zip' -Force
+          
           ls .\v1.10.0
           cd .\v1.10.0\vroom-1.10.0\src
           
-          (Get-Content makefile -Raw) -creplace 'CXXFLAGS = ', 'CXXFLAGS = -I../include -DNOGDI ' | Set-Content "makefile"
-
+          (Get-Content makefile -Raw) -creplace 'CXXFLAGS = ', 'CXXFLAGS = -I../include -I../../../asio/include -I../../../openssl/include -DNOGDI ' | Set-Content "makefile"
+          
           # Create object file with position independent code using -fPIC flag
           # sed -i 's/CXXFLAGS = /CXXFLAGS = -fPIC /' makefile
 
