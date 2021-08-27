@@ -50,7 +50,9 @@ jobs:
       - name: Build VROOM v1.10.0
         run: |
           curl https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.tar.gz --output v1.10.0.tar.gz
+          ls
           tar -zvxf .\v1.10.0.tar.gz
+          ls .\v1.10.0.tar.gz
           cd vroom-1.10.0/src
 
           # Create object file with position independent code using -fPIC flag
