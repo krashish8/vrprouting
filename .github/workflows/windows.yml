@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        pg_major: [11.13, 12.8, 13.4]
+        pg_major: [12.8, 13.4]
 
     steps:
       - name: Checkout repository
@@ -46,6 +46,19 @@ jobs:
       - name: Check Postgres running
         run: |
           ${{ env.POSTGRESQL_DIR }}\bin\psql -U postgres -d postgres -c "SELECT version()"
+
+      - name: Build VROOM v1.10.0
+        run: |
+          wget https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.tar.gz
+          tar -zvxf v1.10.0.tar.gz
+          cd vroom-1.10.0/src
+
+          # Create object file with position independent code using -fPIC flag
+          sed -i 's/CXXFLAGS = /CXXFLAGS = -fPIC /' makefile
+
+          make
+          cd ..
+          echo "VROOM_INSTALL_PATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Configure
         run: |
