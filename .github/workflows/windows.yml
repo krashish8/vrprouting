@@ -53,6 +53,8 @@ jobs:
           Expand-Archive 'v1.10.0.zip' -Force
           ls .\v1.10.0
           cd .\v1.10.0\vroom-1.10.0\src
+          
+          (Get-Content makefile -Raw) -creplace 'CXXFLAGS = ', 'CXXFLAGS = -I../include ' | Set-Content "makefile"
 
           # Create object file with position independent code using -fPIC flag
           # sed -i 's/CXXFLAGS = /CXXFLAGS = -fPIC /' makefile
