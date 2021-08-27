@@ -49,8 +49,7 @@ jobs:
 
       - name: Build VROOM v1.10.0
         run: |
-          curl https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.zip --output v1.10.0.zip
-          ls
+          curl -L https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.zip --output v1.10.0.zip
           Expand-Archive 'v1.10.0.zip' -Force
           ls .\v1.10.0
           cd .\v1.10.0\vroom-1.10.0\src
