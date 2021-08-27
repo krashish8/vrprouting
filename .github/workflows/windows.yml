@@ -61,7 +61,7 @@ jobs:
           ls .\v1.10.0
           cd .\v1.10.0\vroom-1.10.0\src
           
-          (Get-Content makefile -Raw) -creplace 'CXXFLAGS = ', 'CXXFLAGS = -I../include -I../../../asio/asio-1.18.2/include -I../../../openssl/openssl-0.9.8h-1-lib/include -DNOGDI ' | Set-Content "makefile"
+          (Get-Content makefile -Raw) -creplace 'CXXFLAGS = ', 'CXXFLAGS = -I../include -I../../../asio/asio-1.18.2/include -I../../../openssl/include -DNOGDI ' | Set-Content "makefile"
           
           # Create object file with position independent code using -fPIC flag
           # sed -i 's/CXXFLAGS = /CXXFLAGS = -fPIC /' makefile
