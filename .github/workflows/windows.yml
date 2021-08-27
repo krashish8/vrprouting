@@ -51,7 +51,7 @@ jobs:
         run: |
           curl https://github.com/VROOM-Project/vroom/archive/refs/tags/v1.10.0.zip --output v1.10.0.zip
           ls
-          Expand-Archive 'pgsql.zip' -Force
+          Expand-Archive 'v1.10.0.zip' -Force
           ls .\v1.10.0
           cd .\v1.10.0\vroom-1.10.0\src
 
