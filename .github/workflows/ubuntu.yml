@@ -68,9 +68,6 @@ jobs:
           tar -zvxf v1.10.0.tar.gz
           cd vroom-1.10.0/src
 
-          # Create object file with position independent code using -fPIC flag
-          sed -i 's/CXXFLAGS = /CXXFLAGS = -fPIC /' makefile
-
           make
           cd ..
           echo "VROOM_INSTALL_PATH=$(pwd)" >> $GITHUB_ENV
