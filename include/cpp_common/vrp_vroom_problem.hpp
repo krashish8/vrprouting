@@ -509,7 +509,7 @@ class Vrp_vroom_problem : public vrprouting::Pgr_messages {
         problem_instance.add_shipment(shipment.first, shipment.second);
       }
       vroom::Matrix<vroom::Cost> matrix = m_matrix.get_vroom_matrix();
-      problem_instance.set_matrix(vroom::DEFAULT_PROFILE, std::move(matrix));
+      problem_instance.set_durations_matrix(vroom::DEFAULT_PROFILE, std::move(matrix));
 
       auto solution = problem_instance.solve(5, 4);
       results = get_results(solution);
