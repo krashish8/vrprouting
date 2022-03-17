@@ -43,6 +43,7 @@ using Idx = uint64_t;
 using MatrixIndex = int64_t;
 using Duration = uint32_t;
 using TravelCost = uint32_t;
+using FloatingCost = double;
 using Priority = uint32_t;
 using Distance = uint32_t;
 using Skill = uint32_t;
@@ -60,6 +61,8 @@ using Vroom_matrix_t = struct Vroom_matrix_t;
 using Vroom_break_t = struct Vroom_break_t;
 using Vroom_time_window_t = struct Vroom_time_window_t;
 using Vroom_rt = struct Vroom_rt;
+using Coordinate_t = struct Coordinate_t;
+using CostMatrix_rt = struct CostMatrix_rt;
 /*
  * Index on a container
  */
@@ -80,6 +83,7 @@ typedef uint64_t Idx;
 typedef int64_t MatrixIndex;
 typedef uint32_t Duration;
 typedef uint32_t TravelCost;
+typedef double FloatingCost;
 typedef uint32_t Priority;
 typedef uint32_t Distance;
 typedef uint32_t Skill;
@@ -97,6 +101,8 @@ typedef struct Vroom_matrix_t Vroom_matrix_t;
 typedef struct Vroom_break_t Vroom_break_t;
 typedef struct Vroom_time_window_t Vroom_time_window_t;
 typedef struct Vroom_rt Vroom_rt;
+typedef struct Coordinate_t Coordinate_t;
+typedef struct CostMatrix_rt CostMatrix_rt;
 #endif
 
 /*************************************************************************/

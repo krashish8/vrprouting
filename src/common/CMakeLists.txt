@@ -7,6 +7,7 @@ ADD_LIBRARY(common OBJECT
     orders_input.c
     vehicles_input.c
     time_multipliers_input.c
+    coordinates_input.c
 
     time_msg.c
     e_report.c
