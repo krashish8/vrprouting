@@ -7,5 +7,6 @@ var namespacevrprouting =
     [ "vrp", "namespacevrprouting_1_1vrp.html", "namespacevrprouting_1_1vrp" ],
     [ "Identifier", "classvrprouting_1_1Identifier.html", "classvrprouting_1_1Identifier" ],
     [ "Pgr_messages", "classvrprouting_1_1Pgr__messages.html", "classvrprouting_1_1Pgr__messages" ],
-    [ "Vrp_vroom_problem", "classvrprouting_1_1Vrp__vroom__problem.html", "classvrprouting_1_1Vrp__vroom__problem" ]
+    [ "Vrp_vroom_problem", "classvrprouting_1_1Vrp__vroom__problem.html", "classvrprouting_1_1Vrp__vroom__problem" ],
+    [ "operator<<", "namespacevrprouting.html#a915d331f9b0d9a3bf896c998f91d0d9d", null ]
 ];
