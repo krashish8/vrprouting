@@ -33,6 +33,7 @@ jobs:
       - name: Verify Tag Name
         run: |
           TAG_NAME=${GITHUB_REF#refs/*/}
+          TAG_NAME="v0.4.1"
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           echo ${TAG_NAME}
           echo ${PROJECT_VERSION}
